@@ -1,0 +1,5 @@
+
+class UnrefinedDocs < Array
+
+
+end

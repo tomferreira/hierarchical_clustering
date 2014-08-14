@@ -1,0 +1,5 @@
+
+
+class DocVector < Array
+
+end
