@@ -29,6 +29,19 @@ class BinaryTree
     def insert(word, value) 
     end
     
+    # TODO: rename to get_value
+    # return m_file_or_word_id, as the given string's id
+    def is_node(word)
+        node  = @root
+        
+        while node != nil do
+            return node.value if node.word == word
+            node = (word < node.word) ? node.left_child : node.right_child
+        end
+        
+        return -1
+    end
+    
     def print(subtree_root)
     
         if subtree_root != nil

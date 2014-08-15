@@ -47,7 +47,7 @@ class FreqItemTree < BinaryTree
             current_node.right_child = new_node
         end
         
-        start_node = (word < pn.word) ? pn.left_child : pn.rigth_child
+        start_node = (word < pn.word) ? pn.left_child : pn.right_child
         
         update_balance(word, pp, pn, start_node, new_node, super_root)
     end

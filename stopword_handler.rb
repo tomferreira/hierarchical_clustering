@@ -5,13 +5,11 @@ class StopWordHandler
         @stopword_file = stopword_file
         @stopwords = []
         
-        puts "Stopword file: #{@stopword_file}"
-        
         create_stopword_array
     end
     
     def remove_stopwords(file)
-        puts "Removing stopwords from #{file}"
+        #puts "Removing stopwords from #{file}"
                
         words = File.open(file, "rb").read.split(" ")
 

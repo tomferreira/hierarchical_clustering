@@ -15,10 +15,13 @@ class DocumentManager
         preprocess_manager = PreProcessManager.new(@stopwords_file, @document_dir, @min_global_support)
         
         @f1tree, @f1sets, @all_documents = preprocess_manager.preprocess
-        
+                
         return false unless call_idf
 
         return false unless set_freq_one_itemsets
+        
+        puts "Frequent one itemsets:\n"
+        puts @f1tree.print( @f1tree.root )
     end
     
     def get_all_docs
@@ -58,10 +61,10 @@ private
         (0...num_dimensions).each do |t|
             idf[t] = log_ndocs - Math.log10(idf[t] + 1) / log2;
         end
-
+        
         # convert the doc vector to IDF vector
         @all_documents.each do |doc|
-            return false unless doc.doc_vector.convert_to_idf(idf)
+            return false unless doc.doc_vector.convert_to_idf!(idf)
         end
 
         true
@@ -70,7 +73,7 @@ private
     # Set frequent 1-itemsets to each doc vector
     def set_freq_one_itemsets
         @all_documents.each do |doc|
-            doc.doc_vector.set_freq_one_itemsets(@f1sets)
+            doc.doc_vector.freq_one_itemsets = @f1sets
         end
         
         true

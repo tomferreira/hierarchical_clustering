@@ -3,6 +3,7 @@ require_relative 'stopword_handler'
 require_relative 'stem_handler'
 require_relative 'vocabulary_tree'
 require_relative 'freqitem_tree'
+require_relative 'freqitemset'
 require_relative 'unrefined_docs'
 require_relative 'unrefined_doc'
 require_relative 'doc_vector'
@@ -22,7 +23,9 @@ class PreProcessManager
         @stem_handler = StemHandler.new
         @voc_tree = VocalularyTree.new
         @unrefined_docs = UnrefinedDocs.new
-
+        
+        # id is the ID for m_word in the freqItem tree
+        @id = -1
     end
 
     # Do preprocessing, which includes F1 finding, document vector creating, and F1 search tree creating.
@@ -49,12 +52,18 @@ private
         puts "Finished in #{Time.now - start_time} seg"
 
         min_times = (@file_sum * @min_global_support).ceil
-
+        
         puts "# of documents: #{@file_sum}, min_sup = #{@min_global_support}"
     
         f1tree = FreqItemTree.new
+        f1sets = []
     
-        mid_order_traverse(@voc_tree.root, min_times, f1tree, f1sets);
+        mid_order_traverse(@voc_tree.root, min_times, f1tree, f1sets)
+        
+        puts "@freqitem_count: #{@freqitem_count}"
+        
+        # TEMP
+        #@voc_tree.print( @voc_tree.root )
     
         # cleanup the nodes of the tree to save memory
         ##@voc_tree.cleanup
@@ -72,12 +81,11 @@ private
     # create a vector for a given document
     def create_document(docs, urf_doc, f1tree)
 
-        vec = DocVector.new
-        ##vec.SetSize(@freqitem_count, -1)
-    
+        vec = DocVector.new(@freqitem_count, 0)
+
         urf_doc.words.each do |word|
             index = f1tree.is_node(word)
-        
+                    
             # the word is in the freqItem Tree
             vec[index] += 1 if index != -1
         end
@@ -94,14 +102,23 @@ private
             if node.freq >= min_times            
                 @id += 1
                 f1tree.insert( node.word, @id )
-                #add_freqitem(f1sets, node.freq)
+                add_freqitem(f1sets, node.freq, @id)
             end
             
-            mid_order_traverse(node.right_child, min_times, f1tree, f1sets)
-            
+            mid_order_traverse(node.right_child, min_times, f1tree, f1sets)            
         end
         
         @freqitem_count = @id + 1
+    end
+    
+    def add_freqitem(f1sets, freq, id)        
+        freqitem = id
+        
+        freqitemset = FreqItemset.new
+        freqitemset.add_freqitem(freqitem)
+        freqitemset.global_support = freq.to_f / @file_sum
+        
+        f1sets << freqitemset
     end
 
     def construct_voc_btree(start_dir)
@@ -122,21 +139,20 @@ private
     end
     
     def insert_file_words_to_tree(file_name, file_id)
-        puts "Inserting file: #{file_name}"
+        #puts "Inserting file: #{file_name}"
 
         words_clean = @stopwords_handler.remove_stopwords(File.expand_path(file_name))
-                        
+        
+        # TODO:
         @stem_handler.stream_file(words_clean)
         
         @unrefined_docs << UnrefinedDoc.new(file_name, words_clean)
         
-        puts "Insering #{words_clean.length} words in vocabulary..."
+        #puts "Insering #{words_clean.length} words in vocabulary..."
         
         words_clean.each do |word|
             @voc_tree.insert(word, file_id)
         end
-        
-        #@voc_tree.print( @voc_tree.root )
     end
 
 end
