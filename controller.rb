@@ -25,8 +25,12 @@ class Controller
         
         @document_manager.pre_process
         
-        documents = @document_manager.get_all_docs        
-        f1 = @document_manager.get_f1_sets
+        documents = @document_manager.all_documents
+        f1 = @document_manager.f1sets
+                
+        puts "********"
+        puts "* FIHC *"
+        puts "********"
 
         # Frequent Item Manager mines the frequent itemset (Apriori)    
         @freqitem_manager.min_global_support = global_support

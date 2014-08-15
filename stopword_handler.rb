@@ -27,8 +27,7 @@ private
             end
         end
         
-        puts "Stopwords: #{@stopwords}"
-    
+        #puts "Stopwords: #{@stopwords}"    
     end
 
 end

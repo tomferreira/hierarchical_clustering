@@ -5,7 +5,8 @@ require_relative 'kmvector'
 class DocumentManager
 
     attr_writer :stopwords_file, :document_dir, :min_global_support
-    attr_writer :f1tree, :f1sets, :all_documents
+    attr_writer :f1tree
+    attr_accessor :f1sets, :all_documents
 
     def initialize
     
@@ -22,14 +23,6 @@ class DocumentManager
         
         puts "Frequent one itemsets:\n"
         puts @f1tree.print( @f1tree.root )
-    end
-    
-    def get_all_docs
-        @all_documents
-    end
-    
-    def get_f1_sets
-        @f1set
     end
     
 private
