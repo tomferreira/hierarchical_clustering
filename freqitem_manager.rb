@@ -2,6 +2,7 @@
 class FreqItemManager
 
     attr_writer :min_global_support
+    attr_reader :global_freq_itemsets
 
     def mine_global_freqitemsets( documents, f1sets )
         puts "*** Computing global frequent itemsets using Apriori"
@@ -47,10 +48,8 @@ class FreqItemManager
             count += 1
 
         end while count < @numF1
-    end
-
-    def global_freqitemsets
-
+        
+        return true
     end
     
 private
@@ -78,7 +77,7 @@ private
         @numF1.times { |i| @index_freq_itemset[i] = nil }
         
         freqk_itemsets.each_with_index do |freqitemset, pos|
-            id = freqitemset.freqitems.first
+            id = freqitemset.freqitems.first.freq_item_id
 
             @index_freq_itemset[id] = pos if @index_freq_itemset[id].nil?
         end
@@ -99,10 +98,10 @@ private
             
                 incr = true
             
-                freq_itemset.freqitems.each do |id|
+                freq_itemset.freqitems.each do |freq_item|
                 
                     # didn't contain this itemset
-                    if doc.doc_vector[id] <= 0
+                    if doc.doc_vector[freq_item.freq_item_id] <= 0
                         incr = false
                         break
                     end                    

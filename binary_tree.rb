@@ -42,14 +42,14 @@ class BinaryTree
         return -1
     end
     
-    def print(subtree_root)
+    def print2(subtree_root)
     
         if subtree_root != nil
-            print(subtree_root.left_child)
+            print2(subtree_root.left_child)
             
-            puts "(#{subtree_root.word}, #{subtree_root.value})"
+            print "(#{subtree_root.word}, #{subtree_root.value}) "
             
-            print(subtree_root.right_child)            
+            print2(subtree_root.right_child)            
         end
     end
     

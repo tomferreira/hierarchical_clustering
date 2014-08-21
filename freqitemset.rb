@@ -1,6 +1,12 @@
 ﻿
+require_relative 'freqitem'
 
+# TODO: Criar herança da classe Array e deixar de usar o atributo @freqitems
 class FreqItemset
+
+    COMPARE_SMALLER = 0
+    COMPARE_EQUAL = 1
+    COMPARE_LARGER = 2
 
     attr_accessor :global_support
     attr_reader :freqitems
@@ -30,8 +36,8 @@ class FreqItemset
         return false if freq_itemset1.nil? || freq_itemset2.nil?
         return false if freq_itemset1.freqitems.empty? || freq_itemset2.freqitems.empty? || freq_itemset1.freqitems.length != freq_itemset2.freqitems.length
         
-        freq_itemset1.freqitems.each do |id|
-            add_freqitem(id)
+        freq_itemset1.freqitems.each do |freqitem|
+            add_freqitem(freqitem)
         end
         
         add_freqitem(freq_itemset2.freqitems.last)
@@ -48,12 +54,37 @@ class FreqItemset
         tail2 = freq_itemset2.freqitems.length-1
         
         while pos1 != tail1 && pos2 != tail2
-            return false if freq_itemset1.freqitems[pos1] != freq_itemset2.freqitems[pos2]
+            return false if freq_itemset1.freqitems[pos1].freq_item_id != freq_itemset2.freqitems[pos2].freq_item_id
             
             pos1 += 1
             pos2 += 1
         end
 
-        return true        
+        return true
+    end
+    
+    # Returns COMPARE_EQUAL if target itemset is same as this itemset
+    # Returns COMPARE_LARGER if the number of items in target itemset is larger
+    # then this itemset OR the itemIDs are larger than this itemset;
+    # Returns COMPARE_SMALLER otherwise.
+    def compare_to(target_itemset)
+    
+        return COMPARE_LARGER  if target_itemset.freqitems.length > self.freqitems.length
+        return COMPARE_SMALLER if target_itemset.freqitems.length < self.freqitems.length
+        
+        # Compare each frequent item's ID        
+        self.freqitems.zip( target_itemset.freqitems ).each do |freq_item, target_freq_item|
+            if target_freq_item.freq_item_id > freq_item.freq_item_id
+                return COMPARE_LARGER
+            elsif target_freq_item.freq_item_id < freq_item.freq_item_id
+                return COMPARE_SMALLER
+            end
+        end
+        
+        return COMPARE_EQUAL
+    end
+    
+    def print2
+        puts "{ #{@freqitems.map(&:freq_item_id).to_s} } with Global Support = #{global_support}"
     end
 end

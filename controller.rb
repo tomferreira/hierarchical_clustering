@@ -2,6 +2,7 @@
 require_relative 'tree_builder'
 require_relative 'document_manager'
 require_relative 'freqitem_manager'
+require_relative 'cluster_manager'
 require_relative 'evaluation_manager'
 
 class Controller
@@ -15,6 +16,7 @@ class Controller
         @document_manager = DocumentManager.new
 
         @freqitem_manager = FreqItemManager.new
+        @cluster_manager = ClusterManager.new 
     end    
     
     def run( global_support, cluster_support, k_clusters, input_dir )
@@ -36,14 +38,16 @@ class Controller
         @freqitem_manager.min_global_support = global_support
         return false unless @freqitem_manager.mine_global_freqitemsets(documents, f1)
     
-        global_freqitemsets = @freqitem_manager.global_freqitemsets
+        global_freqitemsets = @freqitem_manager.global_freq_itemsets
+                
+        puts "Global frequent itemsets"
+        global_freqitemsets.each { |freqitemset| freqitemset.print2 }
 
         # Cluster Manager builds the clusters of documents    
         # tree based clustering
         return false unless @cluster_manager.make_clusters(documents, global_freqitemsets, cluster_support)
 
-        # Tree Builder constructs the topical tree
-   
+        # Tree Builder constructs the topical tree   
         return false unless @tree_builder.build_tree
 
         # Remove empty clusters

@@ -4,6 +4,7 @@ require_relative 'stem_handler'
 require_relative 'vocabulary_tree'
 require_relative 'freqitem_tree'
 require_relative 'freqitemset'
+require_relative 'freqitem'
 require_relative 'unrefined_docs'
 require_relative 'unrefined_doc'
 require_relative 'doc_vector'
@@ -51,9 +52,9 @@ private
         
         puts "Finished in #{Time.now - start_time} seg"
 
-        min_times = (@file_sum * @min_global_support).ceil
+        min_times = 79 #(@file_sum * @min_global_support).ceil
         
-        puts "# of documents: #{@file_sum}, min_sup = #{@min_global_support}"
+        puts "# of documents: #{@file_sum}, min_sup = #{@min_global_support}, min_times = #{min_times}"
     
         f1tree = FreqItemTree.new
         f1sets = []
@@ -98,8 +99,8 @@ private
 
         if node != nil
             mid_order_traverse(node.left_child, min_times, f1tree, f1sets)
-            
-            if node.freq >= min_times            
+                        
+            if node.freq >= min_times
                 @id += 1
                 f1tree.insert( node.word, @id )
                 add_freqitem(f1sets, node.freq, @id)
@@ -112,7 +113,7 @@ private
     end
     
     def add_freqitem(f1sets, freq, id)        
-        freqitem = id
+        freqitem = FreqItem.new(id)
         
         freqitemset = FreqItemset.new
         freqitemset.add_freqitem(freqitem)
@@ -144,7 +145,7 @@ private
         words_clean = @stopwords_handler.remove_stopwords(File.expand_path(file_name))
         
         # TODO:
-        @stem_handler.stream_file(words_clean)
+        # @stem_handler.stem_file(words_clean)
         
         @unrefined_docs << UnrefinedDoc.new(file_name, words_clean)
         

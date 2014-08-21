@@ -22,7 +22,7 @@ class DocumentManager
         return false unless set_freq_one_itemsets
         
         puts "Frequent one itemsets:\n"
-        puts @f1tree.print( @f1tree.root )
+        puts @f1tree.print2( @f1tree.root )
     end
     
 private
