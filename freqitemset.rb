@@ -18,8 +18,27 @@ class FreqItemset
         @num_global_support = 0
     end
 
-    def add_freqitem(freqitem)
-        @freqitems << freqitem
+    # Add a new frequent item into this itemset. 
+    # No duplicated item and the resultant list is sorted, e.g. {101, 105, 120}
+    def add_freqitem(new_freqitem)
+        return if new_freqitem.nil?
+        
+        if @freqitems.empty?
+            @freqitems << new_freqitem
+            return
+        end
+        
+        @freqitems.reverse_each do |freqitem|
+            # duplicated item
+            return if new_freqitem.freq_item_id == freqitem.freq_item_id
+
+            if new_freqitem.freq_item_id > freqitem.freq_item_id
+                @freqitems.insert(@freqitems.index(freqitem)+1, new_freqitem)
+                return
+            end                
+        end
+        
+        @freqitems.insert(0, new_freqitem)
     end
     
     def calculate_global_support(num_docs)
@@ -82,6 +101,34 @@ class FreqItemset
         end
         
         return COMPARE_EQUAL
+    end
+    
+    # Returns TRUE if the given frequent itemset is a subset of this frequent itemset; FALSE otherwise.  
+    # Note: Assume both itemsets are sorted.
+    def contains_all(target_itemset)
+        return false if target_itemset.nil?
+        
+        pos = 0
+        
+        target_itemset.freqitems.each do |target_freqitem|        
+            target_found = false
+            
+            self.freqitems[pos..-1].each do |freqitem|
+                pos += 1
+                
+                return false if freqitem.freq_item_id > target_freqitem.freq_item_id
+                
+                if freqitem.freq_item_id == target_freqitem.freq_item_id
+                    # target found, check the next frequent item
+                    target_found = true
+                    break
+                end                
+            end
+            
+            return false unless target_found
+        end
+
+        return true
     end
     
     def print2

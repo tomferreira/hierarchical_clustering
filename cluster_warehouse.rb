@@ -17,6 +17,54 @@ class ClusterWarehouse
         return true
     end
     
+    # Get the clusters that can cover the given frequent itemset.
+    # The resultant clusters have no specific order.
+    # Note: mainly used for document assginment stage.
+    def find_covered_clusters(freqitemset, clusters)
+        return if freqitemset.nil?
+        
+        itemset_copy = FreqItemset.new        
+        freqitemset.freqitems.each { |freqitem| itemset_copy.add_freqitem( freqitem ) }
+
+        while !itemset_copy.freqitems.empty?
+        
+            # Find the corresponding group of clusters based on the first itemID
+            first_item_id = itemset_copy.freqitems.first.freq_item_id
+                                    
+            target_clusters = @clusters[first_item_id]
+            return false if target_clusters.nil?
+            
+            # Find the clusters that can cover the current frequent itemset in target_clusters
+            return false if !target_clusters.find_subset_clusters(itemset_copy, clusters)
+            
+            itemset_copy.freqitems.shift
+        end
+    end
+    
+    # Get the potential children cluster of the given frquent itemset. 
+    # The resultant clusters have no specific order.
+    def find_potencial_children(freqitemset, clusters)
+        return if freqitemset.nil?
+        
+        clusters.clear
+        
+        # Find the corresponding group of clusters based on the first itemID
+        first_item_id = freqitemset.freqitems.first.freq_item_id
+        target_clusters = @clusters[first_item_id]
+        
+        target_clusters.find_superset_clusters(freqitemset, clusters)
+    end
+    
+    def all_clusters
+        all_clusters = Clusters.new
+        
+        @clusters.each do |id, clusters|
+            all_clusters.add_clusters(clusters)
+        end
+        
+        return all_clusters
+    end
+    
 private
 
     # Add a cluster to the warehouse.
