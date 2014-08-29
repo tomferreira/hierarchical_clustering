@@ -1,19 +1,16 @@
 ﻿
 require_relative 'freqitem'
 
-# TODO: Criar herança da classe Array e deixar de usar o atributo @freqitems
-class FreqItemset
+class FreqItemset < Array
 
     COMPARE_SMALLER = 0
     COMPARE_EQUAL = 1
     COMPARE_LARGER = 2
 
     attr_accessor :global_support
-    attr_reader :freqitems
+    #attr_reader :freqitems
     
-    def initialize
-        @freqitems = []
-        
+    def initialize        
         @global_support = 0
         @num_global_support = 0
     end
@@ -23,22 +20,40 @@ class FreqItemset
     def add_freqitem(new_freqitem)
         return if new_freqitem.nil?
         
-        if @freqitems.empty?
-            @freqitems << new_freqitem
+        if empty?
+            push( new_freqitem )
             return
         end
         
-        @freqitems.reverse_each do |freqitem|
-            # duplicated item
-            return if new_freqitem.freq_item_id == freqitem.freq_item_id
+        new_id = new_freqitem.freq_item_id
+        
+        pos = self.length-1
+        
+        reverse_each do |freqitem|        
+            id = freqitem.freq_item_id
 
-            if new_freqitem.freq_item_id > freqitem.freq_item_id
-                @freqitems.insert(@freqitems.index(freqitem)+1, new_freqitem)
+            if new_id == id
+                # duplicated item
+                return 
+            elsif new_id > id
+                insert(pos+1, new_freqitem)
                 return
-            end                
+            end
+            
+            pos -= 1
         end
         
-        @freqitems.insert(0, new_freqitem)
+        # add head
+        insert(0, new_freqitem)
+    end
+    
+    # Return the frequent item that has the given item_id
+    def get_freqitem(item_id)
+        each do |freqitem|
+            return freqitem if freqitem.freq_item_id == item_id
+        end
+        
+        return nil
     end
     
     def calculate_global_support(num_docs)
@@ -53,27 +68,27 @@ class FreqItemset
     
     def join(freq_itemset1, freq_itemset2)
         return false if freq_itemset1.nil? || freq_itemset2.nil?
-        return false if freq_itemset1.freqitems.empty? || freq_itemset2.freqitems.empty? || freq_itemset1.freqitems.length != freq_itemset2.freqitems.length
+        return false if freq_itemset1.empty? || freq_itemset2.empty? || freq_itemset1.length != freq_itemset2.length
         
-        freq_itemset1.freqitems.each do |freqitem|
+        freq_itemset1.each do |freqitem|
             add_freqitem(freqitem)
         end
         
-        add_freqitem(freq_itemset2.freqitems.last)
+        add_freqitem(freq_itemset2.last)
         
         return true
     end
     
     def self.joinable(freq_itemset1, freq_itemset2)
         return false if freq_itemset1.nil? || freq_itemset2.nil?
-        return false if freq_itemset1.freqitems.empty? || freq_itemset2.freqitems.empty? || freq_itemset1.freqitems.length != freq_itemset2.freqitems.length
+        return false if freq_itemset1.empty? || freq_itemset2.empty? || freq_itemset1.length != freq_itemset2.length
         
         pos1 = pos2 = 0
-        tail1 = freq_itemset1.freqitems.length-1
-        tail2 = freq_itemset2.freqitems.length-1
+        tail1 = freq_itemset1.length-1
+        tail2 = freq_itemset2.length-1
         
         while pos1 != tail1 && pos2 != tail2
-            return false if freq_itemset1.freqitems[pos1].freq_item_id != freq_itemset2.freqitems[pos2].freq_item_id
+            return false if freq_itemset1[pos1].freq_item_id != freq_itemset2[pos2].freq_item_id
             
             pos1 += 1
             pos2 += 1
@@ -88,11 +103,11 @@ class FreqItemset
     # Returns COMPARE_SMALLER otherwise.
     def compare_to(target_itemset)
     
-        return COMPARE_LARGER  if target_itemset.freqitems.length > self.freqitems.length
-        return COMPARE_SMALLER if target_itemset.freqitems.length < self.freqitems.length
+        return COMPARE_LARGER  if target_itemset.length > self.length
+        return COMPARE_SMALLER if target_itemset.length < self.length
         
         # Compare each frequent item's ID        
-        self.freqitems.zip( target_itemset.freqitems ).each do |freq_item, target_freq_item|
+        self.zip( target_itemset ).each do |freq_item, target_freq_item|
             if target_freq_item.freq_item_id > freq_item.freq_item_id
                 return COMPARE_LARGER
             elsif target_freq_item.freq_item_id < freq_item.freq_item_id
@@ -110,10 +125,10 @@ class FreqItemset
         
         pos = 0
         
-        target_itemset.freqitems.each do |target_freqitem|        
+        target_itemset.each do |target_freqitem|        
             target_found = false
             
-            self.freqitems[pos..-1].each do |freqitem|
+            self[pos..-1].each do |freqitem|
                 pos += 1
                 
                 return false if freqitem.freq_item_id > target_freqitem.freq_item_id
@@ -132,6 +147,6 @@ class FreqItemset
     end
     
     def print2
-        puts "{ #{@freqitems.map(&:freq_item_id).to_s} } with Global Support = #{global_support}"
+        puts "{ #{self.map(&:freq_item_id).to_s} } with Global Support = #{global_support}"
     end
 end

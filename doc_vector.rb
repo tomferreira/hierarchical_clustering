@@ -29,7 +29,10 @@ class DocVector < Array
     # Add each element in the given vector to this vector.
     def add_up(doc_vector)
         
-        return ( self.length == 0 ||  doc_vector.length == 0 ) if self.length != doc_vector.length
+        if self.length != doc_vector.length
+            raise 'error' if self.length != 0 && doc_vector.length != 0
+            return
+        end
         
         self.each_with_index do |item, i|
             item += doc_vector[i]
@@ -44,6 +47,6 @@ private
         # TODO
         raise 'error' if @freq_one_itemsets.nil?
         
-        @freq_one_itemsets[vector_id].freqitems.first.freq_item_id    
+        @freq_one_itemsets[vector_id].first.freq_item_id    
     end
 end

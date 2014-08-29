@@ -7,10 +7,17 @@ class Clusters < Array
     # is a list, it should look like:
     # {{100}, {100, 101}, {100, 102}, {100, 334, 500}, {100, 120, 130, 202}}
     def add_cluster(new_cluster)
-        self.push( new_cluster ) if self.empty?
+
+        if empty?
+            push( new_cluster )
+            return
+        end
         
         new_core_items = new_cluster.core_items        
         num_new_core_items = new_cluster.num_core_items
+        
+        # for performance
+        pos = self.length - 1
         
         reverse_each do |cluster|
         
@@ -18,10 +25,11 @@ class Clusters < Array
             
             if num_core_items > num_new_core_items
                 # not found yet, keep going.
+                pos -= 1
                 next            
             elsif num_core_items < num_new_core_items
                 # insert new cluster after the current cluster
-                self.insert(self.index(cluster)+1, new_cluster)
+                self.insert(pos+1, new_cluster)
                 return true
             else
                 core_items = cluster.core_items                
@@ -30,20 +38,23 @@ class Clusters < Array
                 case res
                 when FreqItemset::COMPARE_SMALLER
                     # not found yet, keep going.
+                    pos -= 1
                     next
 
                 when FreqItemset::COMPARE_LARGER
                     # insert new cluster After the current cluster
-                    self.insert(self.index(cluster)+1, new_cluster)
+                    self.insert(pos+1, new_cluster)
                     return true
                     
                 when FreqItemset::COMPARE_EQUAL
                     return false
                 end
             end
-
+            
+            pos -= 1
         end
         
+        # add head
         self.insert(0, new_cluster)
     end
     
@@ -60,7 +71,7 @@ class Clusters < Array
     # No specific order in the resultant clusters.
     def find_subset_clusters(freq_itemset, clusters)
         
-        num_freqitems = freq_itemset.freqitems.length
+        num_freqitems = freq_itemset.length
         
         each do |cluster|
         
@@ -78,7 +89,7 @@ class Clusters < Array
     # No specific order in the resultant clusters.
     def find_superset_clusters(freq_itemset, clusters)
     
-        num_freqitems = freq_itemset.freqitems.length
+        num_freqitems = freq_itemset.length
         
         each do |cluster|
             next if cluster.num_core_items < num_freqitems
@@ -87,6 +98,20 @@ class Clusters < Array
             core_items = cluster.core_items
             
             clusters << cluster if core_items.contains_all(freq_itemset)
+        end
+    end
+    
+    # Retain the itemset that has k items in it
+    def retain_k_itemsets(k)
+        self.delete_if do |cluster|
+            cluster.num_core_items != k
+        end    
+    end
+    
+    # 
+    def remove_larger_than_k_itemsets(k)    
+        self.delete_if do |cluster|
+            cluster.num_core_items > k
         end
     end
 

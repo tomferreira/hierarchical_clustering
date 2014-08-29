@@ -52,7 +52,7 @@ private
         
         puts "Finished in #{Time.now - start_time} seg"
 
-        min_times = 79 #(@file_sum * @min_global_support).ceil
+        min_times = (@file_sum * @min_global_support).ceil
         
         puts "# of documents: #{@file_sum}, min_sup = #{@min_global_support}, min_times = #{min_times}"
     

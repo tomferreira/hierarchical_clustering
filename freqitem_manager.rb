@@ -23,29 +23,44 @@ class FreqItemManager
         count = 2
         
         begin
+        
+            timers = Array.new(5, 0)
+        
             puts "F#{count-1} size [#{@kminus_itemsets.length}]"
             
+            start = Time.now
             return false unless join_kcandidate_sets(freqk_itemsets)
+            timers[0] = (Time.now - start)
             
+            start = Time.now
             locate_position(freqk_itemsets)
+            timers[1] = (Time.now - start)
             
+            start = Time.now
             prune_kcandidate_sets(freqk_itemsets)
+            timers[2] = (Time.now - start)
             
+            start = Time.now
             return false unless find_min_global_support(freqk_itemsets)
+            timers[3] = (Time.now - start)
             
             break if freqk_itemsets.length == 0
             
             @kminus_itemsets.clear
             
-            freqk_itemsets.each do |freq_itemset|
+            start = Time.now
             
+            freqk_itemsets.each do |freq_itemset|            
                 @kminus_itemsets << freq_itemset
-                @global_freq_itemsets << freq_itemset
-            
+                @global_freq_itemsets << freq_itemset            
             end
+            
+            timers[4] = (Time.now - start)
             
             freqk_itemsets.clear
             count += 1
+            
+            puts "Duration: #{timers.inspect}"
 
         end while count < @numF1
         
@@ -77,7 +92,7 @@ private
         @numF1.times { |i| @index_freq_itemset[i] = nil }
         
         freqk_itemsets.each_with_index do |freqitemset, pos|
-            id = freqitemset.freqitems.first.freq_item_id
+            id = freqitemset.first.freq_item_id
 
             @index_freq_itemset[id] = pos if @index_freq_itemset[id].nil?
         end
@@ -91,14 +106,14 @@ private
     
     def find_min_global_support(freqk_itemsets)
         return false if freqk_itemsets.nil?
-        
+                
         @documents.each do |doc|
         
             freqk_itemsets.each do |freq_itemset|
             
                 incr = true
             
-                freq_itemset.freqitems.each do |freq_item|
+                freq_itemset.each do |freq_item|
                 
                     # didn't contain this itemset
                     if doc.doc_vector[freq_item.freq_item_id] <= 0
@@ -109,15 +124,14 @@ private
                 
                 # contain this itemset
                 freq_itemset.increment_num_global_support if incr            
-            end        
+            end
         end
         
         freqk_itemsets.delete_if do |freq_itemset|
             freq_itemset.calculate_global_support(@documents.length)
             
-            freq_itemset.global_support < @min_global_support
+            freq_itemset.global_support.round(4) < @min_global_support.round(4)
         end
-        
     end
 
 end

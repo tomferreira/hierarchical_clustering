@@ -7,10 +7,6 @@ class DocumentManager
     attr_writer :stopwords_file, :document_dir, :min_global_support
     attr_writer :f1tree
     attr_accessor :f1sets, :all_documents
-
-    def initialize
-    
-    end
     
     def pre_process
         preprocess_manager = PreProcessManager.new(@stopwords_file, @document_dir, @min_global_support)

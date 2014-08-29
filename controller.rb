@@ -10,13 +10,12 @@ class Controller
     STOPWORDS_FILENAME = 'stop_words.txt'
 
     def initialize
-        @tree_buider = TreeBuilder.new( nil )
-        @evaluation_manager = EvaluationManager.new
-        
+        @cluster_manager = ClusterManager.new       
         @document_manager = DocumentManager.new
-
         @freqitem_manager = FreqItemManager.new
-        @cluster_manager = ClusterManager.new 
+        
+        @tree_builder = TreeBuilder.new( @cluster_manager )
+        @evaluation_manager = EvaluationManager.new        
     end    
     
     def run( global_support, cluster_support, k_clusters, input_dir )
@@ -48,19 +47,19 @@ class Controller
         return false unless @cluster_manager.make_clusters(documents, global_freqitemsets, cluster_support)
 
         # Tree Builder constructs the topical tree   
-        return false unless @tree_builder.build_tree
+        @tree_builder.build_tree
 
         # Remove empty clusters
-        return false unless @tree_builder.remove_empty_clusters(false)
+        @tree_builder.remove_empty_clusters(false)
 
         # prune children based on inter-cluster similarity with parent
-        return false unless @tree_builder.prune_children
+        @tree_builder.prune_children
 
         # inter-cluster similarity based pruning
-        return false unless @tree_builder.inter_sim_prune(k_clusters)
+        @tree_builder.inter_sim_prune(k_clusters)
 
         # score based pruning
-        return false unless @tree_builder.inter_sim_over_prune(k_clusters)
+        @tree_builder.inter_sim_over_prune(k_clusters)
 
     end
 
