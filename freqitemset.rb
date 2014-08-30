@@ -27,9 +27,10 @@ class FreqItemset < Array
         
         new_id = new_freqitem.freq_item_id
         
-        pos = self.length-1
+        # for performance
+        pos = self.length - 1
         
-        reverse_each do |freqitem|        
+        self.reverse_each do |freqitem|        
             id = freqitem.freq_item_id
 
             if new_id == id
@@ -49,7 +50,7 @@ class FreqItemset < Array
     
     # Return the frequent item that has the given item_id
     def get_freqitem(item_id)
-        each do |freqitem|
+        self.each do |freqitem|
             return freqitem if freqitem.freq_item_id == item_id
         end
         
@@ -71,10 +72,10 @@ class FreqItemset < Array
         return false if freq_itemset1.empty? || freq_itemset2.empty? || freq_itemset1.length != freq_itemset2.length
         
         freq_itemset1.each do |freqitem|
-            add_freqitem(freqitem)
+            add_freqitem(FreqItem.new(freqitem.freq_item_id))
         end
         
-        add_freqitem(freq_itemset2.last)
+        add_freqitem(FreqItem.new(freq_itemset2.last.freq_item_id))
         
         return true
     end
@@ -126,18 +127,20 @@ class FreqItemset < Array
         pos = 0
         
         target_itemset.each do |target_freqitem|        
+            
+            id_target = target_freqitem.freq_item_id
             target_found = false
             
             self[pos..-1].each do |freqitem|
                 pos += 1
                 
-                return false if freqitem.freq_item_id > target_freqitem.freq_item_id
-                
-                if freqitem.freq_item_id == target_freqitem.freq_item_id
+                if freqitem.freq_item_id > id_target
+                    return false 
+                elsif freqitem.freq_item_id == id_target
                     # target found, check the next frequent item
                     target_found = true
                     break
-                end                
+                end
             end
             
             return false unless target_found

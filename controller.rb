@@ -35,7 +35,7 @@ class Controller
 
         # Frequent Item Manager mines the frequent itemset (Apriori)    
         @freqitem_manager.min_global_support = global_support
-        return false unless @freqitem_manager.mine_global_freqitemsets(documents, f1)
+        @freqitem_manager.mine_global_freqitemsets(documents, f1)
     
         global_freqitemsets = @freqitem_manager.global_freq_itemsets
                 
@@ -44,7 +44,7 @@ class Controller
 
         # Cluster Manager builds the clusters of documents    
         # tree based clustering
-        return false unless @cluster_manager.make_clusters(documents, global_freqitemsets, cluster_support)
+        @cluster_manager.make_clusters(documents, global_freqitemsets, cluster_support)
 
         # Tree Builder constructs the topical tree   
         @tree_builder.build_tree

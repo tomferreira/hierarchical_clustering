@@ -96,7 +96,7 @@ class ClusterWarehouse
     # Get the global support of the given frequent item
     def get_frequent_item_global_support(item_id)
         clusters = @clusters[item_id]        
-        raise 'error' if clusters.nil? || clusters.empty?
+        return -1.0 if clusters.nil? || clusters.empty?
         
         cluster = clusters[0]
         

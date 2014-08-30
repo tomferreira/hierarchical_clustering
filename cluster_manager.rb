@@ -11,12 +11,12 @@ class ClusterManager
 
     def make_clusters(documents, global_freqitemsets, cluster_support)
         return false if documents.nil? || global_freqitemsets.nil? || global_freqitemsets.empty?
-        
+
         @documents = documents
         @cluster_support = cluster_support
         
         puts "*** Adding clusters to warehouse"
-        return false unless @cluster_warehouse.add_clusters(global_freqitemsets)
+        @cluster_warehouse.add_clusters(global_freqitemsets)
         
         puts "#{global_freqitemsets.length} clusters are constructed"
         
@@ -32,10 +32,10 @@ class ClusterManager
         compute_freq_one_itemsets(false, cluster_support)
         
         # Clear all the documents in all the clusters in the Warehouse
-        return false unless remove_all_documents
+        remove_all_documents
         
         puts "*** Constructing clusters based on scores"
-        return false unless construct_score_clusters
+        construct_score_clusters
         
         # Recompute the frequent 1-itemests for each cluster
         puts "*** Computing frequent one itemsets for clusters"
@@ -139,34 +139,33 @@ private
     
     # Construct the initial clusters based on the presented frequent items in the document
     def construct_initial_clusters
-        start_global = Time.now
-        timers = Array.new(4,0)        
+        timer = Array.new(4, 0)
+        startg = Time.now
         
-        @documents.each do |document|        
-            start = Time.now        
+        @documents.each do |document|
+            start = Time.now
             # get the appeared items in the document
-            present_freq_items = document.doc_vector.get_present_items(true)            
-            timers[1] += (Time.now - start)
+            present_freq_items = document.doc_vector.get_present_items(true)
+            timer[0] += (Time.now - start)
             
             start = Time.now
             covered_clusters = Clusters.new
             # get all clusters that can cover this doc
             @cluster_warehouse.find_covered_clusters(present_freq_items, covered_clusters)
-            timers[2] += (Time.now - start)
+            timer[1] += (Time.now - start)
             
             start = Time.now
             # assign doc to all the covered clusters
             assign_doc_to_clusters(document, covered_clusters)
-            timers[3] += (Time.now - start)
+            timer[2] += (Time.now - start)
         end
         
-        timers[0] = Time.now - start_global
-        
-        puts "Duration: #{timers.inspect}"
+        timer[3] = (Time.now - startg)
+        puts "duracao: #{timer}"
     end
     
     # Assign the document to the given clusters.
-    def assign_doc_to_clusters(document, clusters)    
+    def assign_doc_to_clusters(document, clusters)
         clusters.each do |cluster|
             cluster.add_document(document)
         end
@@ -179,7 +178,10 @@ private
     
         all_clusters = @cluster_warehouse.all_clusters
         
-        all_clusters.each_with_index do |cluster, j|
+        # for performance
+        j = 0
+        
+        all_clusters.each do |cluster|
             frequencies = cluster.frequencies
             
             domain_frequencies = DocVector.new
@@ -190,8 +192,12 @@ private
 
             compute_potential_children_frequencies(cluster.core_items, domain_frequencies, num_docs) if include_potencial_children
 
+            puts "# cluster: #{j}"
+
             # compute the frequent 1-itemsets for this cluster based on this domain frequencies
             cluster.calculate_freq_one_itemsets(domain_frequencies, num_docs, cluster_support)
+            
+            j += 1
         end
     end
     
@@ -227,6 +233,8 @@ private
     # Construct clusters based on score function
     def construct_score_clusters
 
+        j = 0
+
         @documents.each do |document|
         
             doc_vector = document.doc_vector
@@ -250,6 +258,10 @@ private
             
             # get the highest score cluster
             high_score_cluster = get_highest_score_cluster(doc_vector, covered_clusters)
+            
+            puts "document: #{document.name} | #present_items: #{present_items.length} | #covered_clusters: #{covered_clusters.length} | #docs: #{high_score_cluster.num_documents} | num_core_items: #{high_score_cluster.num_core_items}"
+            raise 'j' if j > 5
+            j += 1
             
             raise 'error' if high_score_cluster.nil?
             
@@ -277,9 +289,16 @@ private
         cluster.core_items.each { |item| core_freq_itemset.add_freqitem(item) }
         cluster.freqitems.each { |item| core_freq_itemset.add_freqitem(item) }
         
+        # for performance
+        item_id = 0
+        
         # scan through each frequent item in the document vector
-        doc_vector.each_with_index do |frequency, item_id|
-            next if frequency == 0
+        doc_vector.each do |frequency|
+            
+            if frequency == 0
+                item_id += 1
+                next
+            end
             
             freqitem = core_freq_itemset.get_freqitem(item_id)
             
@@ -289,15 +308,17 @@ private
                 
                 raise 'error' if cluster_sup < 0 || cluster_sup > 1
                 
-                score += frequency * cluster_sup
+                score += (frequency * cluster_sup)
             else
                 # deduct score --> n(x') * GlobalSupport(x')
                 infreq_sup = @cluster_warehouse.get_frequent_item_global_support(item_id)
                 
                 raise 'error' if infreq_sup < 0 || infreq_sup > 1
                 
-                score -= frequency * infreq_sup
-            end            
+                score -= (frequency * infreq_sup)
+            end
+            
+            item_id += 1
         end
         
         return score

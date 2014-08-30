@@ -73,7 +73,7 @@ class Clusters < Array
         
         num_freqitems = freq_itemset.length
         
-        each do |cluster|
+        self.each do |cluster|
         
             return true if cluster.num_core_items > num_freqitems
         
@@ -91,7 +91,7 @@ class Clusters < Array
     
         num_freqitems = freq_itemset.length
         
-        each do |cluster|
+        self.each do |cluster|
             next if cluster.num_core_items < num_freqitems
             
             # the core itemset of the current cluster is a superset of the frequent itemset

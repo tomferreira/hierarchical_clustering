@@ -75,7 +75,7 @@ private
     # create vectors for all documents
     def create_documents(docs, f1tree)
         @unrefined_docs.each do |urf_doc|
-            create_document(docs, urf_doc, f1tree);     
+            create_document(docs, urf_doc, f1tree)
         end
     end
 
@@ -87,7 +87,7 @@ private
         urf_doc.words.each do |word|
             index = f1tree.is_node(word)
                     
-            # the word is in the freqItem Tree
+            # the word is in the freqitem tree
             vec[index] += 1 if index != -1
         end
     

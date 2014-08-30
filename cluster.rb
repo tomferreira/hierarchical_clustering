@@ -82,25 +82,33 @@ class Cluster
         
         min_num_docs = (num_docs * cluster_threshold).ceil
         
-        domain_frequencies.each_with_index do |domain_frequencie, i|
+        # for performance
+        i = 0
+
+        domain_frequencies.each do |domain_frequencie|
             
-            next if domain_frequencie < min_num_docs
+            if domain_frequencie < min_num_docs
+                i += 1
+                next
+            end
             
             freqitem = @core_items.get_freqitem(i)
             
             if freqitem
                 # this item is a core item
-                raise "error" if domain_frequencie != num_docs
+                raise "i: #{i} | domain_frequencie: #{domain_frequencie} | num_docs: #{num_docs} | min_num_docs: #{min_num_docs}" if domain_frequencie != num_docs
 
                 freqitem.cluster_support = 1.0
             else
-                # add to frequent itemset            
+                # add to frequent itemset
                 cluster_support = domain_frequencie.to_f / num_docs
 
                 raise 'error' if cluster_support < 0 || cluster_support > 1
                 
                 @freqitems.add_freqitem(ClusterFreqItem.new(i, cluster_support))
             end
+            
+            i += 1
         end
     end
     

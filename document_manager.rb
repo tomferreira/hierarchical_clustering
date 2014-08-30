@@ -12,7 +12,7 @@ class DocumentManager
         preprocess_manager = PreProcessManager.new(@stopwords_file, @document_dir, @min_global_support)
         
         @f1tree, @f1sets, @all_documents = preprocess_manager.preprocess
-                
+                        
         return false unless call_idf
 
         return false unless set_freq_one_itemsets
@@ -53,7 +53,7 @@ private
         
         # convert the doc vector to IDF vector
         @all_documents.each do |doc|
-            return false unless doc.doc_vector.convert_to_idf!(idf)
+            doc.doc_vector.convert_to_idf!(idf)
         end
 
         true

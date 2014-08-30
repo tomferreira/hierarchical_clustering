@@ -4,9 +4,9 @@ class DocVector < Array
     attr_writer :freq_one_itemsets
 
     def convert_to_idf!(idf)
-        return false if self.length != idf.length
+        raise 'error' if self.length != idf.length
         
-        each_index do |i|
+        self.each_index do |i|
             self[i] = (self[i] * idf[i]).ceil
         end
     end
@@ -16,11 +16,15 @@ class DocVector < Array
     def get_present_items(use_item_id)
         present_items = FreqItemset.new
 
-        each_with_index do |item, i|
+        # for performance
+        i = 0
+        self.each do |item|
             if item > 0
                 new_item = ( use_item_id ? FreqItem.new(get_freqitem_id(i)) : FreqItem.new(i) )
                 present_items.add_freqitem(new_item)
             end
+            
+            i += 1
         end
 
         return present_items
@@ -34,8 +38,8 @@ class DocVector < Array
             return
         end
         
-        self.each_with_index do |item, i|
-            item += doc_vector[i]
+        self.each_index do |i|
+            self[i] += doc_vector[i]            
         end
     end
 

@@ -107,16 +107,16 @@ private
     def find_min_global_support(freqk_itemsets)
         return false if freqk_itemsets.nil?
                 
-        @documents.each do |doc|
+        @documents.each do |doc|        
+            doc_vector = doc.doc_vector
         
-            freqk_itemsets.each do |freq_itemset|
-            
+            freqk_itemsets.each do |freq_itemset|            
                 incr = true
-            
+                
                 freq_itemset.each do |freq_item|
                 
                     # didn't contain this itemset
-                    if doc.doc_vector[freq_item.freq_item_id] <= 0
+                    if doc_vector[freq_item.freq_item_id] <= 0
                         incr = false
                         break
                     end                    
@@ -127,11 +127,21 @@ private
             end
         end
         
+        j = 0
+        
+        out_file = File.new("test_ruby.txt", "w")
+        
         freqk_itemsets.delete_if do |freq_itemset|
             freq_itemset.calculate_global_support(@documents.length)
             
-            freq_itemset.global_support.round(4) < @min_global_support.round(4)
+            out_file.puts("#{j},#{freq_itemset.global_support},#{@min_global_support}") if freq_itemset.global_support < @min_global_support
+            j += 1
+            
+            #freq_itemset.global_support.round(4) < @min_global_support.round(4)
+            freq_itemset.global_support < @min_global_support
         end
+        
+        out_file.close
     end
 
 end
