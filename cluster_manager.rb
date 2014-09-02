@@ -177,10 +177,7 @@ private
     def compute_freq_one_itemsets(include_potencial_children, cluster_support)
     
         all_clusters = @cluster_warehouse.all_clusters
-        
-        # for performance
-        j = 0
-        
+                
         all_clusters.each do |cluster|
             frequencies = cluster.frequencies
             
@@ -190,14 +187,10 @@ private
             # number of documents in this cluster and its children
             num_docs = cluster.num_documents
 
-            compute_potential_children_frequencies(cluster.core_items, domain_frequencies, num_docs) if include_potencial_children
-
-            puts "# cluster: #{j}"
+            num_docs += compute_potential_children_frequencies(cluster.core_items, domain_frequencies) if include_potencial_children
 
             # compute the frequent 1-itemsets for this cluster based on this domain frequencies
             cluster.calculate_freq_one_itemsets(domain_frequencies, num_docs, cluster_support)
-            
-            j += 1
         end
     end
     
@@ -207,15 +200,14 @@ private
     # output: resultFrequencies will contain the result of adding up all frequencies 
     # from all potential children AND the parent.
     # output: numDocs will contain the total number documents in parent and children
-    def compute_potential_children_frequencies(core_items, domain_frequencies, num_docs)
-    
+    def compute_potential_children_frequencies(core_items, result_frequencies)
         children_clusters = Clusters.new
     
         # get all the children clusters
         @cluster_warehouse.find_potencial_children(core_items, children_clusters)
         
         # add up all frequencies in these children
-        add_up_cluster_frequencies(children_clusters, domain_frequencies, num_docs)
+        add_up_cluster_frequencies(children_clusters, result_frequencies)
     end
     
     # Remove all the documents in the Cluster Warehouse
@@ -232,9 +224,7 @@ private
     
     # Construct clusters based on score function
     def construct_score_clusters
-
-        j = 0
-
+        
         @documents.each do |document|
         
             doc_vector = document.doc_vector
@@ -259,15 +249,11 @@ private
             # get the highest score cluster
             high_score_cluster = get_highest_score_cluster(doc_vector, covered_clusters)
             
-            puts "document: #{document.name} | #present_items: #{present_items.length} | #covered_clusters: #{covered_clusters.length} | #docs: #{high_score_cluster.num_documents} | num_core_items: #{high_score_cluster.num_core_items}"
-            raise 'j' if j > 5
-            j += 1
-            
             raise 'error' if high_score_cluster.nil?
             
             # assign doc to all the target cluster
             high_score_cluster.add_document(document)
-        
+
         end
 
     end
@@ -324,10 +310,16 @@ private
         return score
     end
     
-    def add_up_cluster_frequencies(clusters, result_vector, num_docs)
+    def add_up_cluster_frequencies(clusters, result_vector)
+        num_docs = 0
+        
         clusters.each do |cluster|        
             result_vector.add_up(cluster.frequencies)
+            
+            num_docs += cluster.num_documents
         end
+        
+        return num_docs
     end
 
 end

@@ -11,7 +11,7 @@ class StopWordHandler
     def remove_stopwords(file)
         #puts "Removing stopwords from #{file}"
                
-        words = File.open(file, "rb").read.split(" ")
+        words = File.open(file, "rb").read.gsub("; ", " ").split(" ")
 
         # return words not included in stopwords
         words - @stopwords 
