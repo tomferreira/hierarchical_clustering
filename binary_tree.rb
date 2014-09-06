@@ -42,6 +42,17 @@ class BinaryTree
         return -1
     end
     
+    def value_to_word(value)
+        node = root
+        
+        while node != nil
+            return node.word if node.value == value            
+            node = (value < node.value) ? node.left_child : node.right_child
+        end
+        
+        return nil
+    end
+    
     def print2(subtree_root)
     
         if subtree_root != nil

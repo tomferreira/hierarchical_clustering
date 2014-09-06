@@ -4,6 +4,7 @@ require_relative 'document_manager'
 require_relative 'freqitem_manager'
 require_relative 'cluster_manager'
 require_relative 'evaluation_manager'
+require_relative 'output_manager'
 
 class Controller
 
@@ -15,7 +16,8 @@ class Controller
         @freqitem_manager = FreqItemManager.new
         
         @tree_builder = TreeBuilder.new( @cluster_manager )
-        @evaluation_manager = EvaluationManager.new        
+        @evaluation_manager = EvaluationManager.new
+        @output_manager = OutputManager.new( @document_manager, @cluster_manager )
     end    
     
     def run( global_support, cluster_support, k_clusters, input_dir )
@@ -61,6 +63,18 @@ class Controller
         # score based pruning
         @tree_builder.inter_sim_over_prune(k_clusters)
 
+        # Output Manager organizes and displays the results to user
+        suffix_input_dir = input_dir.split("/").last
+        
+        out_file_path = make_out_file_path( ".", suffix_input_dir, global_support, cluster_support, k_clusters )
+        
+        @output_manager.produce_output( out_file_path )
+    end
+    
+private
+
+    def make_out_file_path( dir, file_name, global_support, cluster_support, k_clusters )
+        return "#{dir}/#{file_name}.xml"
     end
 
 end

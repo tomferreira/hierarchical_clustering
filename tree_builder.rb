@@ -12,11 +12,11 @@ class TreeBuilder
     def build_tree
         cluster_warehouse = @cluster_manager.cluster_warehouse
         
-        all_clusters = cluster_warehouse.all_clusters_reverse_order
+        all_clusters = cluster_warehouse.all_clusters
         
         puts "*** Building the tree"
 
-        all_clusters.each do |cluster|
+        all_clusters.reverse_each do |cluster|
             frequencies = cluster.frequencies
             
             result_occurences = DocVector.new(frequencies.length, 0)
@@ -36,11 +36,11 @@ class TreeBuilder
                 cluster.set_tree_parent(root)
             else
                 # find as its parent who has the highest score from the potential parents set.                 
-                target_cluster = @cluster_manager.get_highest_score_cluster(result_occurences, potential_parents)                
+                target_cluster = @cluster_manager.get_highest_score_cluster(result_occurences, potential_parents)
                 raise 'error' if target_cluster.nil?
                 
                 target_cluster.add_tree_child(cluster)
-                cluster.set_tree_parent(target_cluster)                
+                cluster.set_tree_parent(target_cluster)
             end
         end
         
@@ -54,12 +54,11 @@ class TreeBuilder
         cluster_warehouse = @cluster_manager.cluster_warehouse
         
         all_clusters = cluster_warehouse.all_clusters
-        all_clusters_reversed = cluster_warehouse.all_clusters_reverse_order
         
         num_empty_pruned = 0
         num_empty_internal = 0
-        
-        all_clusters_reversed.each do |cluster|
+
+        all_clusters.reverse_each do |cluster|
         
             if cluster.num_documents == 0
                 children = cluster.tree_children
@@ -80,6 +79,7 @@ class TreeBuilder
                     
                     # TODO?                    
                     num_empty_pruned += 1
+                    
                 elsif remove_internal
                     # this is an empty internal node
                     parent = cluster.tree_parent
@@ -107,7 +107,7 @@ class TreeBuilder
                     num_empty_internal += 1
                 end
             end
-        
+
         end
         
         puts "#{num_empty_internal} internal empty clusters are pruned!"
@@ -119,21 +119,18 @@ class TreeBuilder
         
         cluster_warehouse = @cluster_manager.cluster_warehouse
 
-        all_clusters_reversed = cluster_warehouse.all_clusters_reverse_order
+        all_clusters = cluster_warehouse.all_clusters
         
-        return if all_clusters_reversed.length == 0
+        return if all_clusters.length == 0
         
-        num_pruned = 0
         num_total_pruned = 0
         
-        all_clusters_reversed.each do |cluster|
+        all_clusters.reverse_each do |cluster|
             # skip leaf node
             next if cluster.tree_children.length == 0
             
             # merge children of this cluster
-            prune_children2(cluster, 0.2, num_pruned)
-            
-            num_total_pruned += num_pruned
+            num_total_pruned += prune_children2(cluster, 0.20000000298023224)
         end
         
         puts "#{num_total_pruned} children clusters are pruned!"
@@ -146,18 +143,16 @@ class TreeBuilder
         
         cluster_warehouse = @cluster_manager.cluster_warehouse
         
-        all_clusters_reversed = cluster_warehouse.all_clusters_reverse_order
-        
-        return if all_clusters_reversed.length == 0
+        return if cluster_warehouse.all_clusters.length == 0
         
         root = cluster_warehouse.tree_root
         
         num_siblings = num_parents = 0
         
         if kclusters == 0
-            merge_children(root, false, kclusters, DC_INTERSIM_THRESHOLD, num_siblings, num_parents)
+            num_siblings, num_parents = merge_children(root, false, kclusters, DC_INTERSIM_THRESHOLD)
         else
-            merge_children(root, false, kclusters, 0.0, num_siblings, num_parents)
+            num_siblings, num_parents = merge_children(root, false, kclusters, 0.0)
         end
         
         raise 'error' if num_parents != 0
@@ -249,7 +244,7 @@ private
         end
     end
     
-    def prune_children2(parent_cluster, min_inter_sim_threshold, num_pruned)
+    def prune_children2(parent_cluster, min_inter_sim_threshold)
         num_pruned = 0
         
         children = parent_cluster.tree_children
@@ -258,14 +253,14 @@ private
         clusters = Array.new(children.length, 0)
         
         idx = 0
-        inter_sim = 0.0
         
         # compute inter-sim with each child
         children.each do |child|
-            @cluster_manager.calculate_inter_similarity(parent_cluster, child, inter_sim)
+            inter_sim = @cluster_manager.calculate_inter_similarity(parent_cluster, child)
             
             sims[idx] = inter_sim
             clusters[idx] = child
+            
             idx += 1
         end
         
@@ -278,11 +273,13 @@ private
             parent_cluster.merge_cluster(clusters[i], all_clusters)
             num_pruned += 1
         end
+        
+        return num_pruned
     end
     
     # Merge the children of the given parent cluster based on inter-cluster
     # similarity. If kclusters == 0, then use min_intersim_threshold as a stopping criteria.
-    def merge_children(parent_cluster, merge_parent, kclusters, min_intersim_threshold, num_merged_sibling, num_merged_parent)
+    def merge_children(parent_cluster, merge_parent, kclusters, min_intersim_threshold)
         num_merged_sibling = num_merged_parent = 0
         
         children = parent_cluster.tree_children        
@@ -308,12 +305,10 @@ private
             cluster1 = children[pos1]
             
             # compute inter-cluster similarity with each sibling
-            inter_sim = 0.0
-            
             (pos1+1...children.length).each do |pos2|
                 cluster2 = children[pos2]
                 
-                @cluster_manager.calculate_inter_similarity(cluster1, cluster2, inter_sim)
+                inter_sim = @cluster_manager.calculate_inter_similarity(cluster1, cluster2)
                 
                 inter_similarities[count] = inter_sim
                 positions1[count] = cluster1
@@ -324,7 +319,7 @@ private
             
             if merge_parent
                 # compute inter-cluster similarity with parent
-                @cluster_manager.calculate_inter_similarity(cluster1, parent_cluster, inter_sim)
+                inter_sim = @cluster_manager.calculate_inter_similarity(cluster1, parent_cluster)
                 
                 inter_similarities[count] = inter_sim
                 positions1[count] = cluster1
@@ -369,14 +364,15 @@ private
                 index = find_cluster_index(cluster1, positions1, cluster2, positions2, count)
                 raise 'error' if index == -1
                 
-                inter_sim = 0
-                @cluster_manager.calculate_inter_similarity(cluster1, cluster2, inter_sim)
+                inter_sim = @cluster_manager.calculate_inter_similarity(cluster1, cluster2)
                 
                 inter_similarities[index] = inter_sim
             end
             
             high_index = find_highest_inter_similarity(inter_similarities, count, min_intersim_threshold)
-        end        
+        end
+        
+        return [num_merged_sibling, num_merged_parent]
     end
     
     def find_highest_inter_similarity(inter_similarities, length, min_intersim_threshold)

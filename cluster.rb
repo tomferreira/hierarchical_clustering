@@ -44,6 +44,12 @@ class Cluster
         @freqitems = ClusterFreqItemset.new
     end
     
+    def label( document_manager )
+        labels = @core_items.map { |freqitem| document_manager.get_freq_term_from_id( freqitem.freq_item_id ) }
+        
+        return labels.join(" ")
+    end
+    
     # Get the itemID of the first core item
     def first_core_item_id
         @core_items.first.freq_item_id
@@ -68,17 +74,23 @@ class Cluster
     end
     
     # Get total number of documents including its tree children
-    def num_documents_include_tree_children    
-        num_documents_include_tree_children_rec( self )    
+    def num_documents_include_tree_children
+        num_documents_include_tree_children_rec( self )
+    end
+    
+    # Get total number of clusters including its tree children
+    def num_clusters_include_tree_children
+        num_clusters_include_tree_children_rec( self )
     end
     
     # Calculate frequent one itemsets for this cluster based on the given domain
     # frequencies and threshold.  In case the cluster is empty, pDomainFrequencies
     # will be an array of zeros, so this function has no effect.
     def calculate_freq_one_itemsets(domain_frequencies, num_docs, cluster_threshold)
-        return if num_docs == 0
-        
+        # TODO: Será que realmente é aqui, ou depois do return?
         @freqitems.clear
+        
+        return if num_docs == 0
         
         min_num_docs = (num_docs * cluster_threshold).ceil
         
@@ -152,21 +164,24 @@ class Cluster
         
         children.each do |child|
             add_tree_child(child)
+            child.set_tree_parent(self)
         end
         
-        child.set_tree_parent(self)        
-        children.clear
+        cluster.tree_children.clear
         
         # move documents to this cluster
-        parent = cluster.tree_parent        
-        children = parent.tree_children
+        cluster.documents.each do |doc|
+            add_document(doc)
+        end
         
-        children.delete( cluster )
+        # remove the cluster from its parent
+        parent = cluster.tree_parent
+        parent.tree_children.delete( cluster )
+        
+        cluster.clear_tree_parent
         
         # remove from the given list
         all_clusters.delete( cluster ) if all_clusters
-        
-        cluster.clear_tree_parent
     end
     
     # Move all documents in the given cluster and its children to this cluster
@@ -238,4 +253,13 @@ private
         return num_total
     end
     
+    def num_clusters_include_tree_children_rec(parent_cluster)
+        num_total = parent_cluster.tree_children.length
+        
+        parent_cluster.tree_children.each do |child|
+            num_total += child.num_clusters_include_tree_children
+        end
+        
+        return num_total
+    end    
 end

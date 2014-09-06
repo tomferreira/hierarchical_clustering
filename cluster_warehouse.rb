@@ -8,6 +8,7 @@ class ClusterWarehouse
 
     def initialize
         @clusters = Hash.new
+        @all_clusters = Clusters.new
         
         @tree_root = Cluster.new
     end
@@ -27,9 +28,11 @@ class ClusterWarehouse
     def find_covered_clusters(freqitemset, clusters)
         return if freqitemset.nil?
         
+        clusters.clear
+        
         # make a shallow copy
         itemset_copy = FreqItemset.new        
-        freqitemset.each { |freqitem| itemset_copy.add_freqitem( freqitem ) }
+        freqitemset.each { |freqitem| itemset_copy << freqitem }
 
         while !itemset_copy.empty?
         
@@ -75,18 +78,15 @@ class ClusterWarehouse
         target_clusters.find_superset_clusters(freqitemset, clusters)
     end
     
+    # Get all clusters in this warehouse; in asecending order
     def all_clusters
-        all_clusters = Clusters.new
-        
-        @clusters.each do |id, clusters|
-            all_clusters.add_clusters(clusters)
+        if @all_clusters.empty?
+            @clusters.each do |id, clusters|
+                @all_clusters.add_clusters(clusters)
+            end
         end
         
-        return all_clusters
-    end
-    
-    def all_clusters_reverse_order
-        all_clusters.reverse
+        return @all_clusters
     end
     
     def clear_dangling_documnents

@@ -75,7 +75,7 @@ class ClusterManager
     
     # Calculate the similarity between two clusters.
     # Idea is from F-Measure.
-    def calculate_inter_similarity(cluster1, cluster2, inter_sim)
+    def calculate_inter_similarity(cluster1, cluster2)
         sum = 0
         inter_sim = 0.0
         
@@ -85,18 +85,18 @@ class ClusterManager
         cluster1.compute_tree_children_occurences(occurences1)
         score1 = calculate_cluster_score_v1(occurences1, cluster2)
         
-        sum = occurences1.inject{|res, x| res + x }
+        sum = occurences1.inject {|res, x| res + x }
         
         # calculate similarity by normalizing the score
-        score1 = sum == 0.0 ? 0.0 : score1.to_f / sum
+        score1 = ( sum == 0.0 ) ? 0.0 : score1.to_f / sum
         
         cluster2.compute_tree_children_occurences(occurences2)
         score2 = calculate_cluster_score_v1(occurences2, cluster1)
         
-        sum = occurences2.inject{|res, x| res + x }
+        sum = occurences2.inject {|res, x| res + x }
         
         # calculate similarity by normalizing the score
-        score2 = sum == 0.0 ? 0.0 : score2.to_f / sum
+        score2 = ( sum == 0.0 ) ? 0.0 : score2.to_f / sum
         
         # negative inter-similarity?
         both_negative = ( score1 < 0 )
@@ -117,7 +117,9 @@ class ClusterManager
         inter_sim = ( score1 * score2 ) ** 0.5
         
         inter_sim *= -1.0 if negative
-        inter_sim *= 2.0 if both_negative        
+        inter_sim *= 2.0 if both_negative
+        
+        return inter_sim
     end
     
     # Calculate the socre of cluster1 against cluster2's frequent 1-itemsets.
@@ -141,7 +143,7 @@ private
     def construct_initial_clusters
         timer = Array.new(4, 0)
         startg = Time.now
-        
+                
         @documents.each do |document|
             start = Time.now
             # get the appeared items in the document
@@ -161,7 +163,7 @@ private
         end
         
         timer[3] = (Time.now - startg)
-        puts "duracao: #{timer}"
+        puts "duration: #{timer}"
     end
     
     # Assign the document to the given clusters.
@@ -176,8 +178,11 @@ private
     # otherwise, compute the frequent 1-itemset for each cluster individually.
     def compute_freq_one_itemsets(include_potencial_children, cluster_support)
     
+        timers = Array.new(3, 0)
+        startg = Time.now
+    
         all_clusters = @cluster_warehouse.all_clusters
-                
+
         all_clusters.each do |cluster|
             frequencies = cluster.frequencies
             
@@ -187,11 +192,19 @@ private
             # number of documents in this cluster and its children
             num_docs = cluster.num_documents
 
+            start = Time.now
             num_docs += compute_potential_children_frequencies(cluster.core_items, domain_frequencies) if include_potencial_children
+            timers[0] += (Time.now - start)
 
+            start = Time.now
             # compute the frequent 1-itemsets for this cluster based on this domain frequencies
             cluster.calculate_freq_one_itemsets(domain_frequencies, num_docs, cluster_support)
+            timers[1] += (Time.now - start)
         end
+        
+        timers[2] += (Time.now - startg)
+        
+        puts "Duration: #{timers}"
     end
     
     # Compute the potential children frequencies
@@ -224,38 +237,48 @@ private
     
     # Construct clusters based on score function
     def construct_score_clusters
+        timers = Array.new(6, 0)
+        startg = Time.now
         
         @documents.each do |document|
         
             doc_vector = document.doc_vector
-        
+            start = Time.now
             # get the appeared items in the document
             present_items = doc_vector.get_present_items(true)
+            timers[0] += (Time.now - start)
             
             if present_items.empty?
+                start = Time.now
                 # this doc contains no frequent items, add it to dangling array
                 @cluster_warehouse.add_dangling_document(document)
+                timers[1] += (Time.now - start)
 
                 next
             end
             
             covered_clusters = Clusters.new
-            
+            start = Time.now
             # get all clusters that can cover this doc
             @cluster_warehouse.find_covered_clusters(present_items, covered_clusters)
+            timers[2] += (Time.now - start)
             
             raise 'error' if covered_clusters.empty?
-            
+            start = Time.now
             # get the highest score cluster
             high_score_cluster = get_highest_score_cluster(doc_vector, covered_clusters)
+            timers[3] += (Time.now - start)
             
             raise 'error' if high_score_cluster.nil?
-            
+            start = Time.now
             # assign doc to all the target cluster
             high_score_cluster.add_document(document)
-
+            timers[4] += (Time.now - start)
         end
-
+        
+        timers[5] += (Time.now - startg)
+        
+        puts "Duration: #{timers}"
     end
     
     # Calculate the score of a doc against a cluster.
@@ -272,8 +295,8 @@ private
         
         # get the cluster's core and frequent items
         core_freq_itemset = ClusterFreqItemset.new
-        cluster.core_items.each { |item| core_freq_itemset.add_freqitem(item) }
-        cluster.freqitems.each { |item| core_freq_itemset.add_freqitem(item) }
+        cluster.core_items.each { |item| core_freq_itemset << item }
+        cluster.freqitems.each { |item| core_freq_itemset << item }
         
         # for performance
         item_id = 0
@@ -298,7 +321,7 @@ private
             else
                 # deduct score --> n(x') * GlobalSupport(x')
                 infreq_sup = @cluster_warehouse.get_frequent_item_global_support(item_id)
-                
+
                 raise 'error' if infreq_sup < 0 || infreq_sup > 1
                 
                 score -= (frequency * infreq_sup)

@@ -8,7 +8,7 @@ class FreqItemset < Array
     COMPARE_LARGER = 2
 
     attr_accessor :global_support
-    #attr_reader :freqitems
+    attr_reader :num_global_support
     
     def initialize        
         @global_support = 0

@@ -21,6 +21,10 @@ class DocumentManager
         puts @f1tree.print2( @f1tree.root )
     end
     
+    def get_freq_term_from_id(id)
+        @f1tree.value_to_word(id)
+    end
+    
 private
 
     def call_idf

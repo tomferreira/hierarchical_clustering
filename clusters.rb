@@ -82,7 +82,8 @@ class Clusters < Array
             
             clusters << cluster if freq_itemset.contains_all(core_items)
         end
-
+        
+        return true
     end
     
     # Find the clusters that has core item which is a superset of freq_itemset
