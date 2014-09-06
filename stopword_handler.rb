@@ -9,25 +9,22 @@ class StopWordHandler
     end
     
     def remove_stopwords(file)
-        #puts "Removing stopwords from #{file}"
-               
         words = File.open(file, "rb").read.gsub("; ", " ").split(" ")
 
         # return words not included in stopwords
-        words - @stopwords 
+        words - @stopwords
     end
-    
+
 private
 
     def create_stopword_array
-    
-        File.open(@stopword_file, "rb") do |infile|
-            while (line = infile.gets)
+
+        File.open(@stopword_file, "rb") do |file|
+            while (line = file.gets)
                 @stopwords << line.chomp
             end
         end
-        
-        #puts "Stopwords: #{@stopwords}"    
+
     end
 
 end

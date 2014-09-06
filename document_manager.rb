@@ -4,12 +4,12 @@ require_relative 'kmvector'
 
 class DocumentManager
 
-    attr_writer :stopwords_file, :document_dir, :min_global_support
+    attr_writer :document_dir, :min_global_support
     attr_writer :f1tree
     attr_accessor :f1sets, :all_documents
     
     def pre_process
-        preprocess_manager = PreProcessManager.new(@stopwords_file, @document_dir, @min_global_support)
+        preprocess_manager = PreProcessManager.new(@document_dir, @min_global_support)
         
         @f1tree, @f1sets, @all_documents = preprocess_manager.preprocess
                         

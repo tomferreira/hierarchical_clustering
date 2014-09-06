@@ -12,7 +12,9 @@ require_relative 'documents'
 
 class PreProcessManager
 
-    def initialize(stopwords_filename, doc_dir, min_global_support)
+    def initialize(doc_dir, min_global_support)
+    
+        detect_language(doc_dir)
 
         @stopwords_handler = StopWordHandler.new( stopwords_filename )
         
@@ -41,6 +43,23 @@ class PreProcessManager
     end
 
 private
+
+    def detect_language(doc_dir)
+        Dir["#{doc_dir}/*"].each do |file_name| 
+        
+            next if file_name == "." || file_name == ".."
+            
+            if File.directory?( file_name )
+                construct_voc_btree(File.expand_path(file_name))
+            else
+                insert_file_words_to_tree(file_name, @file_sum)
+                
+                # number of docs read
+                @file_sum +=1
+            end
+
+        end
+    end
 
     def find_global_freqitem
     

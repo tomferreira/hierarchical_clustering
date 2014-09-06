@@ -90,9 +90,5 @@ private
         }
 
     end
-    
-    def get_cluster_attributes( cluster )
-    
-    end
 
 end

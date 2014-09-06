@@ -8,8 +8,6 @@ require_relative 'output_manager'
 
 class Controller
 
-    STOPWORDS_FILENAME = 'stop_words.txt'
-
     def initialize
         @cluster_manager = ClusterManager.new       
         @document_manager = DocumentManager.new
@@ -23,7 +21,6 @@ class Controller
     def run( global_support, cluster_support, k_clusters, input_dir )
     
         @document_manager.document_dir = input_dir
-        @document_manager.stopwords_file = STOPWORDS_FILENAME
         @document_manager.min_global_support = global_support
         
         @document_manager.pre_process
