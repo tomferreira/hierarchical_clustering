@@ -63,8 +63,8 @@ class FreqItemset < Array
         @global_support = @num_global_support.to_f / num_docs
     end
     
-    def increment_num_global_support
-        @num_global_support += 1
+    def increment_num_global_support(n = 1)
+        @num_global_support += n
     end
     
     def join(freq_itemset1, freq_itemset2)

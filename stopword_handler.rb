@@ -1,8 +1,11 @@
 ﻿
 class StopWordHandler
 
-    def initialize(stopword_file)
-        @stopword_file = stopword_file
+    STOPWORDS_FILE = "stop_words.txt"
+
+    def initialize( language )
+
+        @stopword_file = "#{language}/#{STOPWORDS_FILE}"
         @stopwords = []
         
         create_stopword_array

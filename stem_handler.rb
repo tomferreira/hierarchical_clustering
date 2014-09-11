@@ -1,10 +1,25 @@
 ﻿
+require_relative 'en/stemmer'
+require_relative 'pt/stemmer'
 
 class StemHandler
 
+    class LanguageNotImplemented; end
+
+    def initialize( language )
+        case language
+        when 'en'
+            @stemmer = Stemmer::English.new
+        when 'pt'
+            @stemmer = Stemmer::Portuguese.new
+        else
+            raise LanguageNotImplemented.new
+        end
+    end
+
     def stem_file(words)
         words.each do |word|
-            stem_word(word)
+            word = @stemmer.stem(word)
         end
     end
     

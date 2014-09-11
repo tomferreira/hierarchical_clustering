@@ -1,4 +1,5 @@
 ﻿
+require_relative 'document_language_detector'
 require_relative 'stopword_handler'
 require_relative 'stem_handler'
 require_relative 'vocabulary_tree'
@@ -14,16 +15,19 @@ class PreProcessManager
 
     def initialize(doc_dir, min_global_support)
     
-        detect_language(doc_dir)
+        language_detector = DocumentLanguageDetector.new(doc_dir)
+        @language = language_detector.detect
 
-        @stopwords_handler = StopWordHandler.new( stopwords_filename )
+        puts "Detected language: #{@language}"
+        
+        @stopwords_handler = StopWordHandler.new( @language )        
+        @stem_handler = StemHandler.new( @language )
         
         @doc_dir = doc_dir
         @min_global_support = min_global_support
     
         @file_sum = 0
-    
-        @stem_handler = StemHandler.new
+        
         @voc_tree = VocalularyTree.new
         @unrefined_docs = UnrefinedDocs.new
         
@@ -43,23 +47,6 @@ class PreProcessManager
     end
 
 private
-
-    def detect_language(doc_dir)
-        Dir["#{doc_dir}/*"].each do |file_name| 
-        
-            next if file_name == "." || file_name == ".."
-            
-            if File.directory?( file_name )
-                construct_voc_btree(File.expand_path(file_name))
-            else
-                insert_file_words_to_tree(file_name, @file_sum)
-                
-                # number of docs read
-                @file_sum +=1
-            end
-
-        end
-    end
 
     def find_global_freqitem
     
@@ -163,8 +150,7 @@ private
 
         words_clean = @stopwords_handler.remove_stopwords(File.expand_path(file_name))
         
-        # TODO:
-        # @stem_handler.stem_file(words_clean)
+        @stem_handler.stem_file(words_clean)
         
         @unrefined_docs << UnrefinedDoc.new(file_name, words_clean)
         

@@ -1,5 +1,4 @@
 ﻿
-
 class Document
 
     attr_reader :doc_vector, :name

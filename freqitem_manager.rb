@@ -101,20 +101,48 @@ private
     def prune_kcandidate_sets(freqk_itemsets)
         return false if freqk_itemsets.nil?
         
-        # TODO                
+        # TODO: Fazer!!
+=begin
+        freqtemp = FreqItemset.new
+        
+        freqk_itemsets.each_with_index do |freq_candidateset, pos|
+            
+            id = freq_candidateset.second.freq_item_id
+            
+            start, end = find_interval(id)
+            
+            freq_candidateset[1..-1].each do |freqitem|
+                freqtemp.add_freqitem(freqitem)
+            end
+            
+            unless is_in_kminus(start, end, freqtemp)
+                temp = pos
+            else
+                id = freq_candidateset.first.freq_item_id
+                
+                start, end = find_interval(id)
+                
+                freq_candidateset[1..-2].each do |freqitem|
+                    freqtemp.clear
+                    
+                    
+                end
+            end
+        end
+=end
     end
     
     def find_min_global_support(freqk_itemsets)
         raise 'error' if freqk_itemsets.nil?
 
-        @documents.each do |doc|
-            doc_vector = doc.doc_vector
+        counts = Parallel.map(freqk_itemsets) do |freq_itemset|            
+            count = 0
 
-            freqk_itemsets.each do |freq_itemset|            
+            @documents.each do |doc|
+                doc_vector = doc.doc_vector
                 incr = true
 
                 freq_itemset.each do |freq_item|
-
                     # didn't contain this itemset
                     if doc_vector[freq_item.freq_item_id] <= 0
                         incr = false
@@ -123,13 +151,19 @@ private
                 end
 
                 # contain this itemset
-                freq_itemset.increment_num_global_support if incr            
+                count += 1 if incr
             end
+            
+            count
+        end
+        
+        freqk_itemsets.each_with_index do |freq_itemset, i|
+            freq_itemset.increment_num_global_support(counts[i])
+            
+            freq_itemset.calculate_global_support(@documents.length)
         end
 
         freqk_itemsets.delete_if do |freq_itemset|
-            freq_itemset.calculate_global_support(@documents.length)
-
             freq_itemset.global_support < @min_global_support
         end
     end

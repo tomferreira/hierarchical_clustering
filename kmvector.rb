@@ -1,5 +1,0 @@
-
-class KMVector < Array
-
-
-end 

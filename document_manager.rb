@@ -1,6 +1,5 @@
 ﻿
 require_relative 'pre_process_manager'
-require_relative 'kmvector'
 
 class DocumentManager
 
@@ -17,7 +16,7 @@ class DocumentManager
 
         return false unless set_freq_one_itemsets
         
-        puts "Frequent one itemsets:\n"
+        puts "Frequent one itemsets:"
         puts @f1tree.print2( @f1tree.root )
     end
     
@@ -33,8 +32,7 @@ private
         # get dimensions
         num_dimensions = @all_documents[0].doc_vector.length
 
-        idf = KMVector.new
-        ##idf.size = num_dimensions
+        idf = Array.new
 
         (0...num_dimensions).each { |i| idf[i] = 0.0 }
 

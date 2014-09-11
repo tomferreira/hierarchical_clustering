@@ -108,7 +108,7 @@ class Cluster
             
             if freqitem
                 # this item is a core item
-                raise "i: #{i} | domain_frequencie: #{domain_frequencie} | num_docs: #{num_docs} | min_num_docs: #{min_num_docs}" if domain_frequencie != num_docs
+                raise "error" if domain_frequencie != num_docs
 
                 freqitem.cluster_support = 1.0
             else

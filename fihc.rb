@@ -1,7 +1,10 @@
 ﻿# sudo gem install builder
-# sudo gem install feedbackmine-language_detector
+# cd language_detector
+# sudo gem build language_detector.gemspec
+# sudo gem install language_detector-0.1.2.gem
 # ruby fihc.rb
 
+require 'parallel'
 require_relative "controller"
 
 global_support = 0.050000000000000003
