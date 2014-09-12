@@ -12,7 +12,16 @@ class StopWordHandler
     end
     
     def remove_stopwords(file)
-        words = File.open(file, "rb").read.gsub("; ", " ").split(" ")
+        body = File.open(file, "rb").read.force_encoding("utf-8").downcase
+
+        body.tr!(".,;:_*\"?!()[]{}0123456789", "")
+        body.tr!("\xC2\xBA", "")
+        body.tr!("\xC2\xB0", "")
+        body.tr!("\xC2\xAA", "")
+        body.tr!("\xE2\x80\x9C", "")
+        body.tr!("\xE2\x80\x9D", "")
+
+        words = body.split(" ")
 
         # return words not included in stopwords
         words - @stopwords

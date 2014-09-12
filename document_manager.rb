@@ -32,9 +32,7 @@ private
         # get dimensions
         num_dimensions = @all_documents[0].doc_vector.length
 
-        idf = Array.new
-
-        (0...num_dimensions).each { |i| idf[i] = 0.0 }
+        idf = Array.new(num_dimensions, 0.0)
 
         # calculate term frequencies
         @all_documents.each do |doc|
