@@ -3,29 +3,26 @@ require 'language_detector'
 
 class DocumentLanguageDetector
 
-    def initialize(doc_dir)
+    def initialize(documents)
         @language_detector = LanguageDetector.new
-        @doc_dir = doc_dir
+        @documents = documents
     end
     
     def detect
-        results = detect_language(@doc_dir).flatten
+        results = detect_language(@documents)
         
-        languages = results.inject({}) { |hash, lang| hash.has_key?(lang) ? hash[lang] += 1 : hash[lang] = 1; hash }
+        languages = results.compact.inject({}) { |hash, lang| hash.has_key?(lang) ? hash[lang] += 1 : hash[lang] = 1; hash }
         
         return languages.max_by {|lang, value| value}[0]
     end
     
 private
 
-    def detect_language(doc_dir)        
-        Parallel.map(Dir["#{doc_dir}/*"]) do |file_name| 
-        
-            next if file_name == "." || file_name == ".."
-            
-            return detect_language(File.expand_path(file_name)) if File.directory?( file_name )
+    def detect_language(documents)
+        Parallel.map(documents) do |document|                   
+            next if rand < 0.7
 
-            @language_detector.detect(File.open(file_name, "rb").read)
+            @language_detector.detect(document[:content])
         end
     end
 

@@ -1,4 +1,5 @@
-﻿# sudo gem install builder
+﻿# sudo gem install unicode
+# sudo gem install builder
 # cd language_detector
 # sudo gem build language_detector.gemspec
 # sudo gem install language_detector-0.1.2.gem
