@@ -1,42 +1,46 @@
 ﻿
+require 'unicode'
+
 class StopWordHandler
 
     STOPWORDS_FILE = "stop_words.txt"
+    
+    GRAPHIC_MARKUPS = [ "!", "?", "%", "''", "(", ")", "[", "]", "{", "}", ",", ".", "*", "&", "...", ":", ";", "``", "´", "\xE2\x94\x80", "\xE2\x80\x94", "\xE2\x80\x93", "\xE2\x80\x98", "\xE2\x80\x99", "", "/"]
 
     def initialize( language )
 
-        @stopword_file = "#{language}/#{STOPWORDS_FILE}"
+        stopword_file = "#{language}/#{STOPWORDS_FILE}"
         @stopwords = []
         
-        create_stopword_array
+        load_stopwords(stopword_file)
     end
     
-    def remove_stopwords(file)
-        body = File.open(file, "rb").read.force_encoding("utf-8").downcase
+    def remove_stopwords(tokens)
 
-        body.tr!(".,;:_*\"?!()[]{}0123456789", "")
-        body.tr!("\xC2\xBA", "")
-        body.tr!("\xC2\xB0", "")
-        body.tr!("\xC2\xAA", "")
-        body.tr!("\xE2\x80\x9C", "")
-        body.tr!("\xE2\x80\x9D", "")
-
-        words = body.split(" ")
+        tokens.each do |token|
+            token.strip!
+            token.tr!("\xE2\x80\x9C", "") # aspa inglesa abertura
+            token.tr!("\xE2\x80\x9D", "") # aspa inglesa fechamento
+            token.tr!("\xE2\x80\x98", "") # aspa simples inglesa abertura
+            token.tr!("\xE2\x80\x99", "") # aspa simples inglesa abertura
+            token.tr!(".*", "")
+        end
+        
+        tokens.delete_if { |token| token =~ /^[0-9]*[:-]?[0-9]+$/ }
 
         # return words not included in stopwords
-        words - @stopwords
+        tokens - @stopwords - GRAPHIC_MARKUPS
     end
 
 private
 
-    def create_stopword_array
+    def load_stopwords(stopword_file)
 
-        File.open(@stopword_file, "rb") do |file|
-            while (line = file.gets)
-                @stopwords << line.chomp
-            end
+        File.open(stopword_file, "rb", :encoding => "utf-8").each_line do |line|
+            @stopwords << Unicode.downcase(line.chomp)
         end
-
+        
+        @stopwords.sort!
     end
 
 end
