@@ -1,5 +1,6 @@
 ﻿
 require_relative 'document_language_detector'
+require_relative 'treebank_word_tokenizer'
 require_relative 'stopword_handler'
 require_relative 'stem_handler'
 require_relative 'vocabulary_tree'
@@ -14,12 +15,15 @@ require_relative 'documents'
 class PreProcessManager
 
     def initialize(doc_dir, min_global_support)
+        
+        load_documents(doc_dir)
     
-        language_detector = DocumentLanguageDetector.new(doc_dir)
+        language_detector = DocumentLanguageDetector.new(@raw_documents)
         @language = language_detector.detect
 
         puts "Detected language: #{@language}"
         
+        @tokenizer = TreebankWordTokenizer.new
         @stopwords_handler = StopWordHandler.new( @language )        
         @stem_handler = StemHandler.new( @language )
         
@@ -48,13 +52,28 @@ class PreProcessManager
 
 private
 
+    def load_documents(doc_dir)
+        @raw_documents = []
+    
+        Dir["#{doc_dir}/*"].each do |file_name|
+        
+            next if file_name == "." || file_name == ".."
+            
+            document = JSON.parse( File.open(file_name, "rb", :encoding => "utf-8").read )
+
+            @raw_documents << { :title => document["title"], :content => Unicode.downcase(document["content"]) }
+        end
+        
+        @raw_documents
+    end
+
     def find_global_freqitem
     
         start_time = Time.now
         
         puts "Building vocabulary tree"
 
-        construct_voc_btree(@doc_dir)
+        construct_voc_btree(@raw_documents)
         
         puts "Finished in #{Time.now - start_time} seg"
 
@@ -128,31 +147,24 @@ private
         f1sets << freqitemset
     end
 
-    def construct_voc_btree(start_dir)
-        Dir["#{start_dir}/*"].each do |file_name| 
-        
-            next if file_name == "." || file_name == ".."
-            
-            if File.directory?( file_name )
-                construct_voc_btree(File.expand_path(file_name))
-            else
-                insert_file_words_to_tree(file_name, @file_sum)
-                
-                # number of docs read
-                @file_sum +=1
-            end
+    def construct_voc_btree(documents)
+        documents.each do |document|         
+            insert_file_words_to_tree(document, @file_sum)
 
+            # number of docs read
+            @file_sum +=1
         end
     end
     
-    def insert_file_words_to_tree(file_name, file_id)
-        #puts "Inserting file: #{file_name}"
+    def insert_file_words_to_tree(document, file_id)
 
-        words_clean = @stopwords_handler.remove_stopwords(File.expand_path(file_name))
+        tokens = @tokenizer.tokenize(document[:content])
+
+        words_clean = @stopwords_handler.remove_stopwords(tokens)
         
         @stem_handler.stem_file(words_clean)
         
-        @unrefined_docs << UnrefinedDoc.new(file_name, words_clean)
+        @unrefined_docs << UnrefinedDoc.new(document[:title], words_clean)
         
         #puts "Insering #{words_clean.length} words in vocabulary..."
         
