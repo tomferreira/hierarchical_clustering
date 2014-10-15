@@ -4,7 +4,8 @@ require_relative 'document_manager'
 require_relative 'freqitem_manager'
 require_relative 'cluster_manager'
 require_relative 'evaluation_manager'
-require_relative 'output_manager'
+require_relative 'xml_output_manager'
+require_relative 'vina_output_manager'
 
 class Controller
 
@@ -15,7 +16,7 @@ class Controller
         
         @tree_builder = TreeBuilder.new( @cluster_manager )
         @evaluation_manager = EvaluationManager.new
-        @output_manager = OutputManager.new( @document_manager, @cluster_manager )
+        @output_manager = VinaOutputManager.new( @document_manager, @cluster_manager )
     end    
     
     def run( global_support, cluster_support, k_clusters, input_dir )
@@ -71,7 +72,7 @@ class Controller
 private
 
     def make_out_file_path( dir, file_name, global_support, cluster_support, k_clusters )
-        return "#{dir}/#{file_name}.xml"
+        return "#{dir}/#{file_name}"
     end
 
 end

@@ -45,9 +45,7 @@ class Cluster
     end
     
     def label( document_manager )
-        labels = @core_items.map { |freqitem| document_manager.get_freq_term_from_id( freqitem.freq_item_id ) }
-        
-        return labels.join(" ")
+        @core_items.map { |freqitem| document_manager.get_freq_term_from_id( freqitem.freq_item_id ) }
     end
     
     # Get the itemID of the first core item
