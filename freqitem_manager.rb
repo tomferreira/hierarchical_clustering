@@ -33,7 +33,7 @@ class FreqItemManager
             timers[0] = (Time.now - start)
             
             start = Time.now
-            locate_position(freqk_itemsets)
+            locate_position(@kminus_itemsets)
             timers[1] = (Time.now - start)
             
             start = Time.now
@@ -86,11 +86,56 @@ private
 
     end
     
+    def prune_kcandidate_sets(freqk_itemsets)
+        return false if freqk_itemsets.nil?
+        
+        freqtemp = FreqItemset.new
+        temp = nil
+        
+        freqk_itemsets.each_with_index do |freq_candidate_set, pos|
+            
+            id = freq_candidate_set[1].freq_item_id
+            
+            start_interval, end_interval = find_interval(id)
+            
+            freq_candidate_set[1..-1].each { |freqitem| freqtemp.add_freqitem(freqitem) }
+                        
+            unless is_in_kminus(start_interval, end_interval, freqtemp)
+                temp = pos
+            else
+                id = freq_candidate_set[0].freq_item_id
+                
+                start_interval, end_interval = find_interval(id)
+                
+                freq_candidate_set[1..-2].each do |freqitem|
+                    freqtemp.clear
+                    
+                    freq_candidate_set.each do |freqitem2|
+                        freqtemp.add_freqitem(freqitem2) if freqitem2 != freqitem
+                    end
+
+                    unless is_in_kminus(start_interval, end_interval, freqtemp)
+                        temp = pos
+                        break
+                    end
+                end               
+            end
+            
+            freqtemp.clear
+            
+            unless temp.nil?
+                freqk_itemsets.delete_at(temp)
+                temp = nil                
+            end
+            
+        end
+    end
+    
     def locate_position(freqk_itemsets)
         return if freqk_itemsets.nil?
         
         @numF1.times { |i| @index_freq_itemset[i] = nil }
-        
+                
         freqk_itemsets.each_with_index do |freqitemset, pos|
             id = freqitemset.first.freq_item_id
 
@@ -98,38 +143,26 @@ private
         end
     end
     
-    def prune_kcandidate_sets(freqk_itemsets)
-        return false if freqk_itemsets.nil?
+    def find_interval(id)
+        start_interval = nil
+        end_interval = nil
         
-        # TODO: Fazer!!
-=begin
-        freqtemp = FreqItemset.new
+        start_interval = @index_freq_itemset[id] unless @index_freq_itemset[id].nil?
+                
+        temp_id = id + 1
         
-        freqk_itemsets.each_with_index do |freq_candidateset, pos|
-            
-            id = freq_candidateset.second.freq_item_id
-            
-            start, end = find_interval(id)
-            
-            freq_candidateset[1..-1].each do |freqitem|
-                freqtemp.add_freqitem(freqitem)
+        while temp_id < @numF1
+
+            unless @index_freq_itemset[temp_id].nil?
+                end_interval = @index_freq_itemset[temp_id]
+                break
             end
             
-            unless is_in_kminus(start, end, freqtemp)
-                temp = pos
-            else
-                id = freq_candidateset.first.freq_item_id
-                
-                start, end = find_interval(id)
-                
-                freq_candidateset[1..-2].each do |freqitem|
-                    freqtemp.clear
-                    
-                    
-                end
-            end
+            temp_id += 1
+
         end
-=end
+        
+        return start_interval, end_interval
     end
     
     def find_min_global_support(freqk_itemsets)
@@ -166,6 +199,39 @@ private
         freqk_itemsets.delete_if do |freq_itemset|
             freq_itemset.global_support < @min_global_support
         end
+    end
+    
+    def is_in_kminus(start_interval, end_interval, itemset)
+    
+        raise 'error' if itemset.nil?
+            
+        pos_kminus = start_interval.nil? ? 0 : start_interval
+        end_kminus = end_interval.nil? ? @kminus_itemsets.length-1 : end_interval
+                
+        while pos_kminus != end_kminus
+        
+            equal = true
+        
+            freq_kminusset = @kminus_itemsets[pos_kminus]
+            raise 'error' if freq_kminusset.nil?
+            
+            freq_kminusset.each_with_index do |freqitem, pos|
+                item_id1 = itemset[pos].freq_item_id
+                item_id2 = freqitem.freq_item_id
+                
+                # Two itemsets are not equal
+                if item_id1 != item_id2 
+                    equal = false
+                    break 
+                end
+            end
+            
+            break if equal # Found the matching itemset
+            
+            pos_kminus += 1
+        end
+        
+        return pos_kminus != end_kminus        
     end
 
 end
