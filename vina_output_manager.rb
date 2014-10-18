@@ -31,7 +31,8 @@ private
             hash = { 
                 "words" => words,
                 "name" => "name",
-                "documents" => child.documents.map(&:name)
+                "documents" => child.documents.map(&:name),
+                "links" => child.documents.map(&:link)
             }
             
             sub_tree = write_sub_tree( child, level+1 )

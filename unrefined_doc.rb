@@ -1,10 +1,11 @@
-
+﻿
 class UnrefinedDoc
 
-    attr_reader :name, :words
+    attr_reader :name, :link, :words
 
-    def initialize(name, words)
+    def initialize(name, link, words)
         @name = name
+        @link = link
         @words = words
     end
 

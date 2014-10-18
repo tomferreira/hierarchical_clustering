@@ -7,10 +7,9 @@ require_relative 'vocabulary_tree'
 require_relative 'freqitem_tree'
 require_relative 'freqitemset'
 require_relative 'freqitem'
-require_relative 'unrefined_docs'
 require_relative 'unrefined_doc'
 require_relative 'doc_vector'
-require_relative 'documents'
+require_relative 'document'
 
 class PreProcessManager
 
@@ -33,7 +32,7 @@ class PreProcessManager
         @file_sum = 0
         
         @voc_tree = VocalularyTree.new
-        @unrefined_docs = UnrefinedDocs.new
+        @unrefined_docs = Array.new
         
         # id is the ID for m_word in the freqItem tree
         @id = -1
@@ -44,7 +43,7 @@ class PreProcessManager
     def preprocess
         f1tree, f1sets = find_global_freqitem
 
-        docs = Documents.new
+        docs = Array.new
         create_documents(docs, f1tree)
 
         [f1tree, f1sets, docs]
@@ -61,7 +60,8 @@ private
             
             document = JSON.parse( File.open(file_name, "rb", :encoding => "utf-8").read )
 
-            @raw_documents << { :title => document["title"], :content => Unicode.downcase(document["content"]) }
+            @raw_documents << { 
+                :title => document["title"], :content => Unicode.downcase(document["content"]), :link => document["link"] }
         end
         
         @raw_documents
@@ -116,7 +116,7 @@ private
             vec[index] += 1 if index != -1
         end
     
-        docs << Document.new(vec, urf_doc.name)
+        docs << Document.new(vec, urf_doc.name, urf_doc.link)
     end
     
     # mid-order traverse can guarantee that the resulting frequent items are in alphabetical order
@@ -164,7 +164,7 @@ private
         
         @stem_handler.stem_file(words_clean)
         
-        @unrefined_docs << UnrefinedDoc.new(document[:title], words_clean)
+        @unrefined_docs << UnrefinedDoc.new(document[:title], document[:link], words_clean)
         
         #puts "Insering #{words_clean.length} words in vocabulary..."
         

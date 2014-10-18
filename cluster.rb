@@ -1,7 +1,6 @@
 ﻿
 require_relative 'cluster_freqitemset'
 require_relative 'cluster_freqitem'
-require_relative 'documents'
 
 class Cluster
 
@@ -36,7 +35,7 @@ class Cluster
         
         @status = UNTOUCHED
         
-        @documents = Documents.new
+        @documents = Array.new
         
         @frequencies = DocVector.new
         @occurences = DocVector.new
