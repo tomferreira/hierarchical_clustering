@@ -1,11 +1,13 @@
-﻿
-require_relative 'tree_builder'
-require_relative 'document_manager'
-require_relative 'freqitem_manager'
-require_relative 'cluster_manager'
-require_relative 'evaluation_manager'
-require_relative 'xml_output_manager'
-require_relative 'vina_output_manager'
+
+require 'parallel'
+
+require 'tree_builder'
+require 'document_manager'
+require 'freqitem_manager'
+require 'cluster_manager'
+require 'evaluation_manager'
+require 'xml_output_manager'
+require 'vina_output_manager'
 
 class Controller
 
