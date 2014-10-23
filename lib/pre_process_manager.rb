@@ -1,38 +1,20 @@
 ﻿
-require_relative 'document_language_detector'
-require_relative 'treebank_word_tokenizer'
-require_relative 'stopword_handler'
-require_relative 'stem_handler'
 require_relative 'vocabulary_tree'
 require_relative 'freqitem_tree'
 require_relative 'freqitemset'
 require_relative 'freqitem'
-require_relative 'unrefined_doc'
 require_relative 'doc_vector'
 require_relative 'document'
 
 class PreProcessManager
 
-    def initialize(doc_dir, min_global_support)
-        
-        load_documents(doc_dir)
-    
-        language_detector = DocumentLanguageDetector.new(@raw_documents)
-        @language = language_detector.detect
-
-        puts "Detected language: #{@language}"
-        
-        @tokenizer = TreebankWordTokenizer.new
-        @stopwords_handler = StopWordHandler.new( @language )        
-        @stem_handler = StemHandler.new( @language )
-        
-        @doc_dir = doc_dir
+    def initialize(unrefined_docs, min_global_support)
+        @unrefined_docs = unrefined_docs
         @min_global_support = min_global_support
     
         @file_sum = 0
         
         @voc_tree = VocalularyTree.new
-        @unrefined_docs = Array.new
         
         # id is the ID for m_word in the freqItem tree
         @id = -1
@@ -40,7 +22,7 @@ class PreProcessManager
 
     # Do preprocessing, which includes F1 finding, document vector creating, and F1 search tree creating.
     # It is the only method that external can call to invoke preprocessing 
-    def preprocess
+    def pre_process
         f1tree, f1sets = find_global_freqitem
 
         docs = Array.new
@@ -51,29 +33,13 @@ class PreProcessManager
 
 private
 
-    def load_documents(doc_dir)
-        @raw_documents = []
-    
-        Dir["#{doc_dir}/*"].each do |file_name|
-        
-            next if file_name == "." || file_name == ".."
-            
-            document = JSON.parse( File.open(file_name, "rb", :encoding => "utf-8").read )
-
-            @raw_documents << { 
-                :title => document["title"], :content => Unicode.downcase(document["content"]), :link => document["link"] }
-        end
-        
-        @raw_documents
-    end
-
     def find_global_freqitem
     
         start_time = Time.now
         
         puts "Building vocabulary tree"
 
-        construct_voc_btree(@raw_documents)
+        construct_voc_btree(@unrefined_docs)
         
         puts "Finished in #{Time.now - start_time} seg"
 
@@ -87,12 +53,6 @@ private
         mid_order_traverse(@voc_tree.root, min_times, f1tree, f1sets)
         
         puts "@freqitem_count: #{@freqitem_count}"
-        
-        # TEMP
-        #@voc_tree.print( @voc_tree.root )
-    
-        # cleanup the nodes of the tree to save memory
-        ##@voc_tree.cleanup
 
         [f1tree, f1sets]
     end
@@ -147,8 +107,8 @@ private
         f1sets << freqitemset
     end
 
-    def construct_voc_btree(documents)
-        documents.each do |document|         
+    def construct_voc_btree(unrefined_docs)
+        unrefined_docs.each do |document|
             insert_file_words_to_tree(document, @file_sum)
 
             # number of docs read
@@ -157,18 +117,9 @@ private
     end
     
     def insert_file_words_to_tree(document, file_id)
-
-        tokens = @tokenizer.tokenize(document[:content])
-
-        words_clean = @stopwords_handler.remove_stopwords(tokens)
-        
-        @stem_handler.stem_file(words_clean)
-        
-        @unrefined_docs << UnrefinedDoc.new(document[:title], document[:link], words_clean)
-        
         #puts "Insering #{words_clean.length} words in vocabulary..."
         
-        words_clean.each do |word|
+        document.words.each do |word|
             @voc_tree.insert(word, file_id)
         end
     end

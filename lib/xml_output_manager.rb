@@ -6,7 +6,7 @@ class XmlOutputManager < OutputManager
     
 private
 
-    def write_tree( out_file_path, root_cluster )
+    def write_tree( root_cluster )
     
         # create an XML file
         xml = Builder::XmlMarkup.new( :indent => 2 )
@@ -22,7 +22,7 @@ private
         }
         
         # Save the file
-        File.open(out_file_path + ".xml", "wb") { |file| file.write(xml.target!) }
+        File.open(@out_file_path + ".xml", "wb") { |file| file.write(xml.target!) }
     end
     
     def write_sub_tree( parent_cluster, xml )

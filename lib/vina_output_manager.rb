@@ -6,14 +6,14 @@ class VinaOutputManager < OutputManager
 
 private
 
-    def write_tree( out_file_path, root_cluster )
+    def write_tree( root_cluster )
     
         structure = { 
             "topic_data" => write_sub_tree(root_cluster, 0)
         }
                 
         # Save the file
-        File.open(out_file_path + ".json", "wb") { |file| file.write(structure.to_json) }
+        File.open(@out_file_path + ".json", "wb") { |file| file.write(structure.to_json) }
     end
     
     def write_sub_tree( cluster, level )

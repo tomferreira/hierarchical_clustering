@@ -9,7 +9,7 @@ class StopWordHandler
 
     def initialize( language )
 
-        stopword_file = "#{language}/#{STOPWORDS_FILE}"
+        stopword_file = File.dirname(__FILE__) +"/#{language}/#{STOPWORDS_FILE}"
         @stopwords = []
         
         load_stopwords(stopword_file)

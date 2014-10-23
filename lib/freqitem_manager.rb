@@ -1,8 +1,11 @@
 ﻿
 class FreqItemManager
 
-    attr_writer :min_global_support
     attr_reader :global_freq_itemsets
+
+    def initialize(min_global_support)
+        @min_global_support = min_global_support
+    end
 
     def mine_global_freqitemsets( documents, f1sets )
         puts "*** Computing global frequent itemsets using Apriori"

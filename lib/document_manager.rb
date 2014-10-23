@@ -3,14 +3,17 @@ require_relative 'pre_process_manager'
 
 class DocumentManager
 
-    attr_writer :document_dir, :min_global_support
     attr_writer :f1tree
     attr_accessor :f1sets, :all_documents
-    
-    def pre_process
-        preprocess_manager = PreProcessManager.new(@document_dir, @min_global_support)
+
+    def initialize(global_support)
+        @min_global_support = global_support
+    end    
+
+    def pre_process(unrefined_docs)
+        preprocess_manager = PreProcessManager.new(unrefined_docs, @min_global_support)
         
-        @f1tree, @f1sets, @all_documents = preprocess_manager.preprocess
+        @f1tree, @f1sets, @all_documents = preprocess_manager.pre_process
                         
         return false unless call_idf
 
