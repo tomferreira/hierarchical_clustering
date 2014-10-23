@@ -1,4 +1,4 @@
-
+﻿
 require 'parallel'
 
 require 'tree_builder'
@@ -7,7 +7,6 @@ require 'freqitem_manager'
 require 'cluster_manager'
 require 'evaluation_manager'
 require 'xml_output_manager'
-require 'vina_output_manager'
 
 class Controller
 
