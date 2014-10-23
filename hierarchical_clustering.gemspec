@@ -10,6 +10,9 @@ Gem::Specification.new do |s|
   s.homepage    = %q{http://rubygems.org/gems/hierarchical_clustering}
   s.license       = 'MIT'
   s.require_paths = ["lib"]
+  
+  s.platform = Gem::Platform::RUBY
+  s.required_ruby_version = %(>=2.0.0)
 
   s.add_dependency 'builder', '~> 3.2'
   s.add_dependency 'unicode', '~> 0.4'
