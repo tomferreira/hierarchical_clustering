@@ -1,10 +1,13 @@
-
+﻿
+require 'json'
 require 'document_language_detector'
 require 'unrefined_doc'
 require 'treebank_word_tokenizer'
 require 'stopword_handler'
 require 'stem_handler'
-require 'controller'
+
+require 'clustering/clustering'
+require 'clustering/fihc/controller'
 
 class HierarchicalClustering
 
