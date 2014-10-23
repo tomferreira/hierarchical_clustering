@@ -38,6 +38,11 @@ private
         Dir["#{doc_dir}/*"].each do |file_name|
         
             next if file_name == "." || file_name == ".."
+            
+            if File.directory?( file_name )
+                raw_documents.concat( load_documents( file_name ) ) 
+                next
+            end
 
             document = JSON.parse( File.open(file_name, "rb", :encoding => "utf-8").read )
 
