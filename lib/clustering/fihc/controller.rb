@@ -6,7 +6,6 @@ require 'clustering/fihc/tree_builder'
 require 'clustering/fihc/document_manager'
 require 'clustering/fihc/freqitem_manager'
 require 'clustering/fihc/cluster_manager'
-require 'clustering/fihc/evaluation_manager'
 require 'clustering/fihc/xml_output_manager'
 
 module Clustering::Fihc
@@ -21,7 +20,6 @@ module Clustering::Fihc
             @freqitem_manager = FreqItemManager.new(global_support)
 
             @tree_builder = TreeBuilder.new( @cluster_manager )
-            @evaluation_manager = EvaluationManager.new
             @output_manager = XmlOutputManager.new("results")
         end
 
