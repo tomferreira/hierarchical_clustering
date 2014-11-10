@@ -11,12 +11,12 @@ require 'clustering/fihc/controller'
 
 class HierarchicalClustering
 
-    def initialize(input_dir, strategy)
+    def initialize(dir:, algorithm:)
         @unrefined_docs = []
 
-        pre_process(input_dir)
+        pre_process(dir)
 
-        strategy.run(input_dir, @unrefined_docs)
+        algorithm.run(dir, @unrefined_docs)
     end
 
 private
