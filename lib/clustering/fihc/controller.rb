@@ -1,6 +1,7 @@
 ﻿
 require 'parallel'
 
+require 'controller'
 require 'clustering/fihc/version'
 require 'clustering/fihc/tree_builder'
 require 'clustering/fihc/document_manager'
@@ -9,7 +10,7 @@ require 'clustering/fihc/cluster_manager'
 require 'clustering/fihc/xml_output_manager'
 
 module Clustering::Fihc
-    class Controller
+    class Controller < ::Controller
 
         def initialize(global_support:, cluster_support:, k_clusters:)
             @cluster_support = cluster_support
@@ -21,10 +22,6 @@ module Clustering::Fihc
 
             @tree_builder = TreeBuilder.new( @cluster_manager )
             @output_manager = XmlOutputManager.new("results")
-        end
-
-        def output_manager(output_manager)
-            @output_manager = output_manager
         end
 
         def run(input_dir, unrefined_docs)
