@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'hierarchical_clustering'
-  s.version     = '0.0.2'
+  s.version     = '0.0.3'
   s.date        = '2014-10-01'
   s.summary     = %q{Library for a bunch of hierarchical clustering algorithms}
   s.description = %q{Library for a bunch of hierarchical clustering algorithms}
@@ -12,7 +12,7 @@ Gem::Specification.new do |s|
   s.require_paths = ["lib"]
   
   s.platform = Gem::Platform::RUBY
-  s.required_ruby_version = %(>=1.9.3)
+  s.required_ruby_version = %(>=2.0.0)
 
   s.add_dependency 'builder', '~> 3.2'
   s.add_dependency 'unicode', '~> 0.4'

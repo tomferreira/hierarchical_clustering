@@ -12,7 +12,7 @@ require 'clustering/fihc/xml_output_manager'
 module Clustering::Fihc
     class Controller < ::Controller
 
-        def initialize(global_support:, cluster_support:, k_clusters:)
+        def initialize(global_support: nil, cluster_support: nil, k_clusters: nil)
             @cluster_support = cluster_support
             @k_clusters = k_clusters
 

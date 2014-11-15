@@ -11,7 +11,7 @@ require 'clustering/fihc/controller'
 
 class HierarchicalClustering
 
-    def initialize(dir:, algorithm:)
+    def initialize(dir: nil, algorithm: nil)
         @unrefined_docs = []
 
         pre_process(dir)
