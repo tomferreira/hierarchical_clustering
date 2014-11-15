@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'hierarchical_clustering'
-  s.version     = '0.0.3'
+  s.version     = '0.0.4'
   s.date        = '2014-10-01'
   s.summary     = %q{Library for a bunch of hierarchical clustering algorithms}
   s.description = %q{Library for a bunch of hierarchical clustering algorithms}

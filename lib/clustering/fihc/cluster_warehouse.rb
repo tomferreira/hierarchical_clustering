@@ -23,6 +23,10 @@ module Clustering::Fihc
             return true
         end
 
+        def add_dangling_document(document)
+            @tree_root.add_document(document)
+        end
+
         # Get the clusters that can cover the given frequent itemset.
         # The resultant clusters have no specific order.
         # Note: mainly used for document assginment stage.
