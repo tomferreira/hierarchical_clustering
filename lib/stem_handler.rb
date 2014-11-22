@@ -1,6 +1,7 @@
 ﻿
 require_relative 'en/stemmer'
 require_relative 'pt/stemmer'
+require_relative 'es/stemmer'
 
 class StemHandler
 
@@ -12,6 +13,8 @@ class StemHandler
             @stemmer = Stemmer::English.new
         when 'pt'
             @stemmer = Stemmer::Portuguese.new
+        when 'es'
+            @stemmer = Stemmer::Spanish.new
         else
             raise LanguageNotImplemented.new
         end
