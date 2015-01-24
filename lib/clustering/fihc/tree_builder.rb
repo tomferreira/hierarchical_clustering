@@ -14,7 +14,7 @@ module Clustering::Fihc
 
             all_clusters = cluster_warehouse.all_clusters
 
-            puts "*** Building the tree"
+            puts "*** Building the tree" if Configuration.debug
 
             all_clusters.reverse_each do |cluster|
                 frequencies = cluster.frequencies
@@ -49,7 +49,7 @@ module Clustering::Fihc
         end
 
         def remove_empty_clusters(remove_internal)
-            puts "*** Removing empty clusters"
+            puts "*** Removing empty clusters" if Configuration.debug
 
             cluster_warehouse = @cluster_manager.cluster_warehouse
 
@@ -110,12 +110,14 @@ module Clustering::Fihc
 
             end
 
-            puts "#{num_empty_internal} internal empty clusters are pruned!"
-            puts "#{num_empty_pruned} empty clusters are pruned!"        
+            if Configuration.debug
+                puts "#{num_empty_internal} internal empty clusters are pruned!" 
+                puts "#{num_empty_pruned} empty clusters are pruned!"
+            end
         end
 
         def prune_children
-            puts "*** Pruning children clusters based on inter-cluster similarity with parent"
+            puts "*** Pruning children clusters based on inter-cluster similarity with parent" if Configuration.debug
 
             cluster_warehouse = @cluster_manager.cluster_warehouse
 
@@ -133,13 +135,13 @@ module Clustering::Fihc
                 num_total_pruned += prune_children2(cluster, 0.20000000298023224)
             end
 
-            puts "#{num_total_pruned} children clusters are pruned!"
+            puts "#{num_total_pruned} children clusters are pruned!" if Configuration.debug
         end
 
         # Prune the tree based on inter-cluster similarity
         # kcluster = minimum # of clusters
         def inter_sim_prune(kclusters)
-            puts "*** Pruning clusters based on inter-cluster similarity"
+            puts "*** Pruning clusters based on inter-cluster similarity" if Configuration.debug
 
             cluster_warehouse = @cluster_manager.cluster_warehouse
 
@@ -155,16 +157,16 @@ module Clustering::Fihc
                 num_siblings, num_parents = merge_children(root, false, kclusters, 0.0)
             end
 
-            raise 'error' if num_parents != 0
+            raise "Parents must be zero. (num_parents: #{num_parents})" if num_parents != 0
 
-            puts "#{num_siblings} clusters at level 1 are merged with sibling!"
+            puts "#{num_siblings} clusters at level 1 are merged with sibling!" if Configuration.debug
         end
 
         # Over prune clusters using inter-cluster similarity
         def inter_sim_over_prune(kclusters)
             return if kclusters <= 0
 
-            puts "*** Over prune clusters to satisfy specified # of clusters"
+            puts "*** Over prune clusters to satisfy specified # of clusters" if Configuration.debug
 
             cluster_warehouse = @cluster_manager.cluster_warehouse
 
@@ -221,13 +223,13 @@ module Clustering::Fihc
                 num_clusters -= 1
             end
 
-            puts "#{merged_count} clusters at level 1 are merged!"
+            puts "#{merged_count} clusters at level 1 are merged!" if Configuration.debug
         end
 
     private
 
         def calculate_freq_onte_itemsets_using_tree_children
-            puts "*** Recomputing the frequent one itemsets using tree children"
+            puts "*** Recomputing the frequent one itemsets using tree children" if Configuration.debug
 
             cluster_warehouse = @cluster_manager.cluster_warehouse
 

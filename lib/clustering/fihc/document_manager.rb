@@ -20,8 +20,10 @@ module Clustering::Fihc
 
             return false unless set_freq_one_itemsets
 
-            puts "Frequent one itemsets:"
-            puts @f1tree.print2( @f1tree.root )
+            if Configuration.debug
+                puts "Frequent one itemsets:" 
+                puts @f1tree.print2( @f1tree.root )
+            end
         end
 
         def get_freq_term_from_id(id)

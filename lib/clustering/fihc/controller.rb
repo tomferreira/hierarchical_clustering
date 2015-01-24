@@ -31,17 +31,21 @@ module Clustering::Fihc
             documents = @document_manager.all_documents
             f1 = @document_manager.f1sets
 
-            puts "********"
-            puts "* FIHC *"
-            puts "********"
+            if Configuration.debug
+                puts "********"
+                puts "* FIHC *"
+                puts "********"
+            end
 
             # Frequent Item Manager mines the frequent itemset (Apriori)
             @freqitem_manager.mine_global_freqitemsets(documents, f1)
 
             global_freqitemsets = @freqitem_manager.global_freq_itemsets
 
-            puts "Global frequent itemsets"
-            global_freqitemsets.each { |freqitemset| freqitemset.print2 }
+            if Configuration.debug
+                puts "Global frequent itemsets:" 
+                global_freqitemsets.each { |freqitemset| freqitemset.print2 }
+            end
 
             # Cluster Manager builds the clusters of documents    
             # tree based clustering

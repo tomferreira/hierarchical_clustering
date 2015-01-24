@@ -38,22 +38,22 @@ module Clustering::Fihc
 
             start_time = Time.now
 
-            puts "Building vocabulary tree"
+            puts "Building vocabulary tree" if Configuration.debug
 
             construct_voc_btree(@unrefined_docs)
 
-            puts "Finished in #{Time.now - start_time} seg"
+            puts "Finished in #{Time.now - start_time} seg" if Configuration.debug
 
             min_times = (@file_sum * @min_global_support).ceil
 
-            puts "# of documents: #{@file_sum}, min_sup = #{@min_global_support}, min_times = #{min_times}"
+            puts "# of documents: #{@file_sum}, min_sup = #{@min_global_support}, min_times = #{min_times}" if Configuration.debug
 
             f1tree = FreqItemTree.new
             f1sets = []
 
             mid_order_traverse(@voc_tree.root, min_times, f1tree, f1sets)
 
-            puts "@freqitem_count: #{@freqitem_count}"
+            puts "@freqitem_count: #{@freqitem_count}" if Configuration.debug
 
             [f1tree, f1sets]
         end
@@ -118,8 +118,6 @@ module Clustering::Fihc
         end
 
         def insert_file_words_to_tree(document, file_id)
-            #puts "Insering #{words_clean.length} words in vocabulary..."
-
             document.words.each do |word|
                 @voc_tree.insert(word, file_id)
             end

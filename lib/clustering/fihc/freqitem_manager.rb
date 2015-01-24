@@ -9,7 +9,7 @@ module Clustering::Fihc
         end
 
         def mine_global_freqitemsets( documents, f1sets )
-            puts "*** Computing global frequent itemsets using Apriori"
+            puts "*** Computing global frequent itemsets using Apriori" if Configuration.debug
 
             return false unless documents
 
@@ -30,7 +30,7 @@ module Clustering::Fihc
 
                 timers = Array.new(5, 0)
 
-                puts "F#{count-1} size [#{@kminus_itemsets.length}]"
+                puts "F#{count-1} size [#{@kminus_itemsets.length}]" if Configuration.debug
 
                 start = Time.now
                 return false unless join_kcandidate_sets(freqk_itemsets)
@@ -38,14 +38,17 @@ module Clustering::Fihc
 
                 start = Time.now
                 locate_position(@kminus_itemsets)
+                
                 timers[1] = (Time.now - start)
 
                 start = Time.now
                 prune_kcandidate_sets(freqk_itemsets)
+
                 timers[2] = (Time.now - start)
 
                 start = Time.now
                 find_min_global_support(freqk_itemsets)
+
                 timers[3] = (Time.now - start)
 
                 break if freqk_itemsets.length == 0
@@ -64,7 +67,7 @@ module Clustering::Fihc
                 freqk_itemsets.clear
                 count += 1
 
-                puts "Duration: #{timers.inspect}"
+                puts "Duration: #{timers.inspect}" if Configuration.debug
 
             end while count < @numF1
 

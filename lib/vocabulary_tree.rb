@@ -5,8 +5,6 @@ class VocalularyTree < BinaryTree
 
     def insert(word, value)
     
-        #puts "Insering word '#{word}' ..."
-    
         if @root.nil?
             @root = BinaryTreeNode.new(word, value)
             return

@@ -16,17 +16,17 @@ module Clustering::Fihc
             @documents = documents
             @cluster_support = cluster_support
 
-            puts "*** Adding clusters to warehouse"
+            puts "*** Adding clusters to warehouse" if Configuration.debug
             @cluster_warehouse.add_clusters(global_freqitemsets)
 
-            puts "#{global_freqitemsets.length} clusters are constructed"
+            puts "#{global_freqitemsets.length} clusters are constructed" if Configuration.debug
 
-            puts "*** Constructing initial clusters"
+            puts "*** Constructing initial clusters" if Configuration.debug
 
             # Assign documents to cluster (initial clustering)
             construct_initial_clusters
 
-            puts "*** Computing frequent one itemsets for initial clusters"
+            puts "*** Computing frequent one itemsets for initial clusters" if Configuration.debug
 
             # Compute the frequent 1-itemsets for each cluster
             # Maintain the cluster support for each frequent item in the cluster
@@ -35,11 +35,11 @@ module Clustering::Fihc
             # Clear all the documents in all the clusters in the Warehouse
             remove_all_documents
 
-            puts "*** Constructing clusters based on scores"
+            puts "*** Constructing clusters based on scores" if Configuration.debug
             construct_score_clusters
 
             # Recompute the frequent 1-itemests for each cluster
-            puts "*** Computing frequent one itemsets for clusters"
+            puts "*** Computing frequent one itemsets for clusters" if Configuration.debug
             compute_freq_one_itemsets(true, cluster_support)
 
             return true
@@ -164,7 +164,7 @@ module Clustering::Fihc
             end
 
             timer[3] = (Time.now - startg)
-            puts "duration: #{timer}"
+            puts "duration: #{timer}" if Configuration.debug
         end
 
         # Assign the document to the given clusters.
@@ -205,7 +205,7 @@ module Clustering::Fihc
 
             timers[2] += (Time.now - startg)
 
-            puts "Duration: #{timers}"
+            puts "Duration: #{timers}" if Configuration.debug
         end
 
         # Compute the potential children frequencies
@@ -259,27 +259,33 @@ module Clustering::Fihc
                 end
 
                 covered_clusters = Clusters.new
+                
                 start = Time.now
                 # get all clusters that can cover this doc
                 @cluster_warehouse.find_covered_clusters(present_items, covered_clusters)
+
                 timers[2] += (Time.now - start)
 
                 raise 'error' if covered_clusters.empty?
+
                 start = Time.now
                 # get the highest score cluster
                 high_score_cluster = get_highest_score_cluster(doc_vector, covered_clusters)
+
                 timers[3] += (Time.now - start)
 
                 raise 'error' if high_score_cluster.nil?
+
                 start = Time.now
                 # assign doc to all the target cluster
                 high_score_cluster.add_document(document)
+
                 timers[4] += (Time.now - start)
             end
 
             timers[5] += (Time.now - startg)
 
-            puts "Duration: #{timers}"
+            puts "Duration: #{timers}" if Configuration.debug
         end
 
         # Calculate the score of a doc against a cluster.

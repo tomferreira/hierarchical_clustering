@@ -1,5 +1,6 @@
 ﻿
 require 'json'
+require 'configuration'
 require 'document_language_detector'
 require 'unrefined_doc'
 require 'treebank_word_tokenizer'
@@ -11,8 +12,10 @@ require 'clustering/fihc/controller'
 
 class HierarchicalClustering
 
-    def initialize(dir: nil, algorithm: nil)
+    def initialize(dir: nil, algorithm: nil, debug: false)
         @unrefined_docs = []
+        
+        Configuration.debug = debug
 
         pre_process(dir)
 
@@ -27,7 +30,7 @@ private
         language_detector = DocumentLanguageDetector.new(raw_documents)
         language = language_detector.detect
 
-        puts "Detected language: #{language}"
+        puts "Detected language: #{language}" if Configuration.debug
 
         tokenize(raw_documents, language)
     end
