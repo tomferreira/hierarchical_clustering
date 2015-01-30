@@ -19,9 +19,12 @@ class DocumentLanguageDetector
 private
 
     def detect_language(documents)
-        Parallel.map(documents) do |document|                   
-            next if rand < 0.7
+        srand
 
+        # Select a sample of documents
+        selected_documents = documents.select { |d| rand >  0.7 }
+
+        Parallel.map(selected_documents) do |document|
             @language_detector.detect(document[:content])
         end
     end
