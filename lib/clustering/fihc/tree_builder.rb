@@ -5,7 +5,7 @@ module Clustering::Fihc
         DC_INTERSIM_THRESHOLD = 0.0
 
         def initialize( cluster_manager )
-            @cluster_manager = cluster_manager    
+            @cluster_manager = cluster_manager
         end
 
         # Construct the cluster tree
