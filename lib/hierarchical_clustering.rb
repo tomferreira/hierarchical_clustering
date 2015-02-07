@@ -75,7 +75,7 @@ private
             words_clean_total += Marshal.load(Marshal.dump(words_clean))
         
             PerformanceMonitor.start(:stemming)
-            stem_handler.stem_file(words_clean)
+            stem_handler.stem_file!(words_clean)
             PerformanceMonitor.stop(:stemming)
 
             words_stem_total += Marshal.load(Marshal.dump(words_clean))

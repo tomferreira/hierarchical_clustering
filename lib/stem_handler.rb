@@ -22,8 +22,8 @@ class StemHandler
         @buffer = {}
     end
 
-    def stem_file(words)
-        words.map do |word|
+    def stem_file!(words)
+        words.map! do |word|
             unless @buffer.has_key?(word)
                 @buffer[word] = @stemmer.stem(word)
             else
