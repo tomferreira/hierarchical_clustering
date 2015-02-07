@@ -58,6 +58,7 @@ private
         # 
         tokens_total = []
         words_clean_total = []
+        words_stem_total = []
 
         raw_documents.each do |document|
 
@@ -76,6 +77,8 @@ private
             PerformanceMonitor.start(:stemming)
             stem_handler.stem_file(words_clean)
             PerformanceMonitor.stop(:stemming)
+
+            words_stem_total += Marshal.load(Marshal.dump(words_clean))
         
             @unrefined_docs << UnrefinedDoc.new(document[:title], document[:link], words_clean)
 
@@ -83,7 +86,12 @@ private
 
         PerformanceMonitor.add(:tokens_uniq, tokens_total.uniq.count)
         PerformanceMonitor.add(:tokens_total, tokens_total.count)
+        
+        PerformanceMonitor.add(:words_clean_uniq, words_clean_total.uniq.count)
         PerformanceMonitor.add(:words_clean_total, words_clean_total.count)
+
+        PerformanceMonitor.add(:words_stem_uniq, words_stem_total.uniq.count)
+        PerformanceMonitor.add(:words_stem_total, words_stem_total.count)
     end
 
     def load_documents(doc_dir)
